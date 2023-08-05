@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import F, Q, CheckConstraint, UniqueConstraint 
 
 User = get_user_model()
 
@@ -18,10 +19,12 @@ class Recipe(models.Model):
         through='RecipeIngredient',
         through_fields=('recipe', 'ingredient')
         )
-    # is_favorite =
-    # is_in_shopping_cart =
+    is_favorite = models.BooleanField()
+    is_in_shopping_cart = models.BooleanField()
     name = models.CharField(max_length=200)
-    # image =
+    image = models.ImageField(
+        upload_to='images/',
+        default='no_photo.jpg')
     text = models.TextField()
     # можно добавить валидацию?
     cooking_time = models.PositiveIntegerField()
@@ -39,3 +42,29 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
+
+
+class IsSubscribed(models.Model):
+    """Модель для работы с подписками."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+        verbose_name='Подписчик'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+        verbose_name='Автор'
+    )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = [
+            CheckConstraint(name='not_same', check=~Q(user=F('author'))),
+            UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_following'),
+        ]

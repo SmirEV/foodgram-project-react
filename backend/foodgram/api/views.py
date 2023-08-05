@@ -3,7 +3,8 @@ from djoser.views import UserViewSet
 
 from rest_framework.viewsets import ModelViewSet
 from recipes.models import Tag, Recipe, Ingredient
-from api.serializers import IngredientSerializer, TagSerializer, RecipeSerializer, RecipeCreateSerializer
+from api.serializers import (IngredientSerializer, TagSerializer,
+                             RecipeSerializer, RecipeCreateSerializer)
 
 
 def index(request):

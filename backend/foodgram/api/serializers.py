@@ -1,6 +1,8 @@
 ﻿from rest_framework import serializers
 
-from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient
+from recipes.models import (Tag, Ingredient,
+                            Recipe, RecipeIngredient,
+                            User)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -38,9 +40,23 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
         field = ('id', 'amount')
 
 
+class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username',
+                  'first_name', 'last_name',
+                  'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        return False
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
+    author = UserSerializer()
 
     class Meta:
         model = Recipe
