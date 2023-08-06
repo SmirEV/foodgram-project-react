@@ -1,10 +1,17 @@
 from django.shortcuts import render, HttpResponse
 from djoser.views import UserViewSet
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework import status
+from django.db import IntegrityError
 
 from rest_framework.viewsets import ModelViewSet
-from recipes.models import Tag, Recipe, Ingredient
+from recipes.models import (User,Tag, Recipe, Ingredient,
+                            IsSubscribed)
 from api.serializers import (IngredientSerializer, TagSerializer,
-                             RecipeSerializer, RecipeCreateSerializer)
+                             RecipeSerializer, RecipeCreateSerializer,
+                             AuthorSerializer, UserCreateSerializer)
+from api.pagination import CustomPagination
 
 
 def index(request):
@@ -12,7 +19,38 @@ def index(request):
 
 
 class CustomUserViewSet(UserViewSet):
-    pass
+    serializer_class = AuthorSerializer
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserCreateSerializer
+        return AuthorSerializer
+
+    @action(detail=True, methods=['post', 'delete'])
+    def subscribe(self, request, id=None):
+        user = self.request.user
+        author = User.objects.get(id=id)
+        if request.method == 'POST':
+            if user == author:
+                return Response(
+                    {'error': ' Ошибка подписки'},
+                    status=status.HTTP_400_BAD_REQUEST)
+            try:
+                IsSubscribed(
+                    user=user,
+                    author=author
+                    ).save()
+            except IntegrityError:
+                return Response(
+                    {'error': 'Ошибка подписки'},
+                    status=status.HTTP_400_BAD_REQUEST)
+            serializer = AuthorSerializer(author)
+            return Response(serializer.data)
+        if request.method == 'DELETE':
+            id = IsSubscribed.objects.get(user=user, author=author).id
+            IsSubscribed(id=id).delete()
+            return Response()
 
 
 class TagViewSet(ModelViewSet):
@@ -28,6 +66,7 @@ class IngredientViewSet(ModelViewSet):
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(

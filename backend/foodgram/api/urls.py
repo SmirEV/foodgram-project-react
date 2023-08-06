@@ -8,6 +8,12 @@ from api.views import (index, CustomUserViewSet,
 
 router = routers.DefaultRouter()
 router.register('users', CustomUserViewSet)
+router.register(r'users/(?P<pk>\d+)/subscribe',
+                CustomUserViewSet,
+                basename='user-subscribe')
+router.register(r'users/subscriptions',
+                CustomUserViewSet,
+                basename='subscriptions')
 router.register('tags', TagViewSet)
 router.register('recipes', RecipeViewSet)
 router.register('ingredients', IngredientViewSet)

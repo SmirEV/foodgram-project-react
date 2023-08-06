@@ -12,22 +12,36 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    tags = models.ManyToManyField(Tag)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    tags = models.ManyToManyField(
+        Tag,
+        blank=False)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE)
     ingredients = models.ManyToManyField(
         'Ingredient',
         through='RecipeIngredient',
-        through_fields=('recipe', 'ingredient')
+        through_fields=('recipe', 'ingredient'),
+        blank=False
         )
     is_favorite = models.BooleanField()
     is_in_shopping_cart = models.BooleanField()
-    name = models.CharField(max_length=200)
+    name = models.CharField(
+        max_length=200,
+        blank=False,
+        null=False)
     image = models.ImageField(
         upload_to='images/',
-        default='no_photo.jpg')
-    text = models.TextField()
+        # default='no_photo.jpg',
+        blank=False,
+        null=False)
+    text = models.TextField(
+        blank=False,
+        null=False)
     # можно добавить валидацию?
-    cooking_time = models.PositiveIntegerField()
+    cooking_time = models.PositiveIntegerField(
+        blank=False,
+        null=False)
 
 
 class Ingredient(models.Model):

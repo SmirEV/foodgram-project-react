@@ -1,11 +1,26 @@
-﻿from rest_framework import serializers
+﻿import webcolors
+
+from rest_framework import serializers
 
 from recipes.models import (Tag, Ingredient,
                             Recipe, RecipeIngredient,
                             User)
 
 
+class NameToHexColor(serializers.Field):
+    def to_representation(self, value):
+        return value
+
+    def to_internal_value(self, data):
+        try:
+            data = webcolors.name_to_hex(data)
+        except ValueError:
+            raise serializers.ValidationError('Неизвестный цвет')
+        return data
+
+
 class TagSerializer(serializers.ModelSerializer):
+    color = NameToHexColor()
 
     class Meta:
         model = Tag
@@ -40,7 +55,15 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
         field = ('id', 'amount')
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username',
+                  'first_name', 'last_name')
+
+
+class AuthorSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -56,7 +79,7 @@ class UserSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
-    author = UserSerializer()
+    author = AuthorSerializer()
 
     class Meta:
         model = Recipe
