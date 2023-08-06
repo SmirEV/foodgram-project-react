@@ -10,7 +10,8 @@ from recipes.models import (User,Tag, Recipe, Ingredient,
                             IsSubscribed)
 from api.serializers import (IngredientSerializer, TagSerializer,
                              RecipeSerializer, RecipeCreateSerializer,
-                             AuthorSerializer, UserCreateSerializer)
+                             AuthorSerializer, UserCreateSerializer,
+                             AuthorWithRecipesSerializer)
 from api.pagination import CustomPagination
 
 
@@ -51,6 +52,13 @@ class CustomUserViewSet(UserViewSet):
             id = IsSubscribed.objects.get(user=user, author=author).id
             IsSubscribed(id=id).delete()
             return Response()
+
+    @action(detail=False, methods=['get'])
+    def subscriptions(self, request):
+        user = self.request.user
+        authors = User.objects.filter(following__user=user)
+        serializer = AuthorWithRecipesSerializer(authors, many=True)
+        return Response(serializer.data)
 
 
 class TagViewSet(ModelViewSet):

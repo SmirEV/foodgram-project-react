@@ -76,6 +76,32 @@ class AuthorSerializer(serializers.ModelSerializer):
         return False
 
 
+class AuthorWithRecipesSerializer(AuthorSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username',
+                  'first_name', 'last_name',
+                  'is_subscribed', 'recipes',
+                  'recipes_count')
+
+    def get_is_subscribed(self, obj):
+        return False
+
+    def get_recipes(self, instance):
+        recipes = Recipe.objects.all().filter(
+            author=instance.id)
+        return RecipeSerializer(recipes,
+                                many=True).data
+
+    def get_recipes_count(self, instance):
+        return len(Recipe.objects.all().filter(
+            author=instance.id))
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
