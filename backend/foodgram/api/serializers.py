@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from recipes.models import (Tag, Ingredient,
                             Recipe, RecipeIngredient,
-                            User)
+                            User, IsSubscribed)
 
 
 class NameToHexColor(serializers.Field):
@@ -72,8 +72,12 @@ class AuthorSerializer(serializers.ModelSerializer):
                   'first_name', 'last_name',
                   'is_subscribed')
 
-    def get_is_subscribed(self, obj):
-        return False
+    def get_is_subscribed(self, instance):
+        request = self.context.get('request')
+        user = request.user
+        return len(IsSubscribed.objects.all().filter(
+            author=instance.id,
+            user=user)) == 1
 
 
 class AuthorWithRecipesSerializer(AuthorSerializer):
@@ -87,9 +91,6 @@ class AuthorWithRecipesSerializer(AuthorSerializer):
                   'first_name', 'last_name',
                   'is_subscribed', 'recipes',
                   'recipes_count')
-
-    def get_is_subscribed(self, obj):
-        return False
 
     def get_recipes(self, instance):
         recipes = Recipe.objects.all().filter(

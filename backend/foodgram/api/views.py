@@ -46,7 +46,9 @@ class CustomUserViewSet(UserViewSet):
                 return Response(
                     {'error': 'Ошибка подписки'},
                     status=status.HTTP_400_BAD_REQUEST)
-            serializer = AuthorSerializer(author)
+            serializer = AuthorSerializer(
+                instance=author,
+                context={'request': request})
             return Response(serializer.data)
         if request.method == 'DELETE':
             id = IsSubscribed.objects.get(user=user, author=author).id
@@ -57,7 +59,10 @@ class CustomUserViewSet(UserViewSet):
     def subscriptions(self, request):
         user = self.request.user
         authors = User.objects.filter(following__user=user)
-        serializer = AuthorWithRecipesSerializer(authors, many=True)
+        serializer = AuthorWithRecipesSerializer(
+                instance=authors,
+                context={'request': request},
+                many=True)
         return Response(serializer.data)
 
 
