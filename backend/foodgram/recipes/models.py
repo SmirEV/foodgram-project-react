@@ -82,3 +82,54 @@ class IsSubscribed(models.Model):
                 fields=['user', 'author'],
                 name='unique_following'),
         ]
+
+
+class Favorites(models.Model):
+    """Модель для работы с избранным."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='user',
+        verbose_name='Пользователь'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorite_recipe',
+        verbose_name='Рецепт'
+    )
+
+    class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_favorites'),
+        ]
+
+
+class MyShoppingCart(models.Model):
+    """Модель для работы с корзиной."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='cooker',
+        verbose_name='Покупатель'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='for_cooking',
+        verbose_name='Рецепт'
+    )
+
+    class Meta:
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзина'
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_shoppingcart'),
+        ]

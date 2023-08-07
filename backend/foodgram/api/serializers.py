@@ -4,7 +4,8 @@ from rest_framework import serializers
 
 from recipes.models import (Tag, Ingredient,
                             Recipe, RecipeIngredient,
-                            User, IsSubscribed)
+                            User, IsSubscribed,
+                            Favorites)
 
 
 class NameToHexColor(serializers.Field):
@@ -107,6 +108,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
     author = AuthorSerializer()
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -117,6 +119,20 @@ class RecipeSerializer(serializers.ModelSerializer):
             instance.recipe_ingredients.all(),
             many=True
         ).data
+
+    def get_is_favorite(self, instance):
+        request = self.context.get('request')
+        user = request.user
+        return len(Favorites.objects.all().filter(
+            recipe=instance.id,
+            user=user)) == 1
+
+
+class RecipeShortSerializer(RecipeSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
