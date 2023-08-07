@@ -1,16 +1,16 @@
+import io
 from django.shortcuts import render, HttpResponse
 from djoser.views import UserViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status
 from django.db import IntegrityError
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-
 
 from rest_framework.viewsets import ModelViewSet
 from recipes.models import (User,Tag, Recipe, Ingredient,
@@ -29,71 +29,29 @@ def index(request):
 
 
 def generate_pdf(request, data):
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
 
-    pdf_canvas = canvas.Canvas("data.pdf", pagesize=A4)
-    # pdf_canvas.setFont("Times-Roman", 18)
-    # pdf_canvas.setFont('Courier', 12)
-    # pdf_canvas.set_encoding('UTF-8')
+    # Create the PDF object, using the buffer as its "file."
+    pdf_canvas = canvas.Canvas(buffer, pagesize=A4)
     pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
     pdf_canvas.setFont("DejaVuSans", 18)
     y = 750
+    pdf_canvas.drawString(50, y, 'СПИСОК ПОКУПОК:')
+    y -= 20
     for key, value in data.items():
-        text = u'- {item}:  {amount} {unit}'.format(item=key, amount=value[0], unit=value[1])
+        y -= 20
+        text = u'- {item}:  {amount} {unit}'.format(
+            item=key, amount=value[0], unit=value[1])
         text = text.encode('utf-8')
         pdf_canvas.drawString(50, y, text)
-        y -= 20
 
+    pdf_canvas.showPage()
     pdf_canvas.save()
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="data.pdf"'
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename="data.pdf")
 
-    with open("data.pdf", "rb") as f:
-        response.write(f.read())
-
-    return response
-
-'''
-def generate_pdf(request, data):
-
-    pdf = FPDF()
-    pdf.add_page()
-    #pdf.set_lang('ru')
-    #pdf.core_fonts_encoding('windows-1251')
-    pdf.set_font("Arial", size=12)
-    for key, value in data.items():
-        pdf.cell(200, 10, txt=f'- {key}: {value[0]} {value[1]}', ln=1)
-
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="data.pdf"'
-
-    pdf.output(response)
-
-    return response
-
-
-def generate_pdf(data):
-    template = {
-        "content": [
-            {
-                "text": "Данные:",
-                "style": "header"
-            },
-            {
-                "ul": [f"- {item[0]}: {item[1]} {item[2]}" for item in data]
-            }
-        ],
-        "styles": {
-            "header": {
-                "fontSize": 18,
-                "bold": True,
-                "margin": [0, 0, 0, 10]
-            }
-        }
-    }
-    pdf = convert_json(template)
-    return pdf
-'''
 
 class CustomUserViewSet(UserViewSet):
     serializer_class = AuthorSerializer
