@@ -2,6 +2,7 @@ import io
 from django.shortcuts import render, HttpResponse
 from djoser.views import UserViewSet
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework import status
 from django.db import IntegrityError
@@ -124,17 +125,31 @@ class CustomUserViewSet(UserViewSet):
             IsSubscribed(id=id).delete()
             return Response()
 
-    @action(detail=False, methods=['get'])
-    def subscriptions(self, request):
+    @action(detail=False, methods=['post'])
+    def set_password(self, request):
         user = request.user
-        print(f'\n\n{user}\n\n')
-        authors = User.objects.filter(following__user=user)
-        print(f'\n\n{authors}\n\n')
-        serializer = AuthorWithRecipesSerializer(
-                instance=authors,
-                context={'request': request},
-                many=True)
-        return Response(serializer.data)
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        if not user.check_password(current_password):
+            return Response({'error': 'Invalid old password'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response({'message': 'Password successfully changed'},
+                        status=status.HTTP_200_OK)
+
+
+class AuthorViewSet(UserViewSet):
+    serializer_class = AuthorWithRecipesSerializer
+    pagination_class = CustomPagination
+ 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = User.objects.filter(following__user=user)
+        return queryset
 
 
 class TagViewSet(ModelViewSet):
@@ -161,9 +176,9 @@ class RecipeViewSet(ModelViewSet):
         return recipes
 
     def get_serializer_class(self):
-        if self.action == 'create':
-            return RecipeCreateSerializer
-        return RecipeSerializer
+        if self.action == 'get':
+            return RecipeSerializer
+        return RecipeCreateSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -237,67 +252,3 @@ class RecipeViewSet(ModelViewSet):
             recipe=get_object_or_404(Recipe, id=pk)
         ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-'''
-class FavoriteViewSet(ModelViewSet):
-    queryset = Recipe.objects.all().order_by('-id')
-
-    def create(self, request, id=None):
-        recipe = self.get_object()
-        try:
-            Favorites(
-                user=request.user,
-                recipe=recipe).save()
-        except IntegrityError:
-            return Response(
-                {'error': 'Ошибка добавления в избранное'},
-                status=status.HTTP_400_BAD_REQUEST)
-        serializer = RecipeShortSerializer(recipe)
-        return Response(serializer.data)
-
-    def destroy(self, request, id=None):
-        recipe = self.get_object()
-        id = Favorites.objects.get(
-            user=request.user,
-            recipe=recipe).id
-        Favorites(id=id).delete()
-        return Response()
-
-    def delete(self, request, id):
-        return self.destroy(request, id)
-
-    def get_object(self):
-        return self.queryset.get(id=self.kwargs['id'])
-
-
-class ShoppingCartViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
-
-    def create(self, request, id=None):
-        recipe = self.get_object()
-        try:
-            MyShoppingCart(
-                user=request.user,
-                recipe=recipe).save()
-        except IntegrityError:
-            return Response(
-                {'error': 'Ошибка добавления в корзину'},
-                status=status.HTTP_400_BAD_REQUEST)
-        serializer = RecipeShortSerializer(recipe)
-        return Response(serializer.data)
-
-    def destroy(self, request, id=None):
-        recipe = self.get_object()
-        id = MyShoppingCart.objects.get(
-            user=request.user,
-            recipe=recipe).id
-        MyShoppingCart(id=id).delete()
-        return Response()
-
-    def delete(self, request, id):
-        return self.destroy(request, id)
-
-    def get_object(self):
-        return self.queryset.get(id=self.kwargs['id'])
-'''

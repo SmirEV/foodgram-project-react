@@ -89,13 +89,13 @@ class AuthorWithRecipesSerializer(AuthorSerializer):
                   'recipes_count')
 
     def get_recipes(self, instance):
-        request = self.context.get('request')
-        recipes = Recipe.objects.all()
+        recipes = instance.recipe_set.all()
         return RecipeShortSerializer(recipes,
                                      many=True).data
 
     def get_recipes_count(self, instance):
-        return instance.recipes.count()
+        recipes = instance.recipe_set.all()
+        return len(recipes)
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -131,9 +131,6 @@ class RecipeShortSerializer(RecipeSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    '''
-    Надо прикрутить теги и картинки
-    '''
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all())
@@ -147,12 +144,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                   'ingredients', 'name', 'image',
                   'text', 'cooking_time')
 
-    def create(self, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
-        print(f'\n\n{ingredients_data}\n\n')
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags_data)
+    @staticmethod
+    def create_ingredients_list(recipe, ingredients_data):
         ingredient_list = []
         for ingredient_data in ingredients_data:
             ingredient_list.append(
@@ -163,7 +156,22 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 )
             )
         RecipeIngredient.objects.bulk_create(ingredient_list)
+
+    def create(self, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags_data)
+        self.create_ingredients_list(recipe, ingredients_data)
         return recipe
+
+    def update(self, instance, validated_data):
+        instance.tags.clear()
+        RecipeIngredient.objects.filter(recipe=instance).delete()
+        instance.tags.set(validated_data.pop('tags'))
+        ingredients_data = validated_data.pop('ingredients')
+        self.create_ingredients_list(instance, ingredients_data)
+        return super().update(instance, validated_data)
 
     def get_author(self, instance):
         return AuthorSerializer(instance.author).data

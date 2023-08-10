@@ -32,7 +32,6 @@ class Recipe(models.Model):
         null=False)
     image = models.ImageField(
         upload_to='recipes/',
-        # default='no_photo.jpg',
         blank=False,
         null=False)
     text = models.TextField(
