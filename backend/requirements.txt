@@ -1,9 +1,9 @@
 
 Django==3.2
-djangorestframework
+djangorestframework==3.12.4
 djoser
 Pillow=10.0.0
-sorl-thumbnail
 webcolors
 reportlab
-json2pdf
+drf-extra-fields
+django-filter-23.2

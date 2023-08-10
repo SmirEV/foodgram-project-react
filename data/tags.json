@@ -1,0 +1,52 @@
+﻿[
+    {
+        "name": "Завтрак",
+        "color": "blue",
+        "slug": "breakfast"
+    },
+    {
+        "name": "Обед",
+        "color": "green",
+        "slug": "lunch"
+    },
+    {
+        "name": "Ужин",
+        "color": "red",
+        "slug": "dinner"
+    },
+    {
+        "name": "Без сахара",
+        "color": "purple",
+        "slug": "no_sugar"
+    },
+    {
+        "name": "Для спортсменов",
+        "color": "orange",
+        "slug": "for_athletes"
+    },
+    {
+        "name": "Супы",
+        "color": "forestgreen",
+        "slug": "soups"
+    },
+    {
+        "name": "Гарнир",
+        "color": "brown",
+        "slug": "side_dish"
+    },
+    {
+        "name": "Десерт",
+        "color": "pink",
+        "slug": "dessert"
+    },
+    {
+        "name": "Мясо",
+        "color": "aqua",
+        "slug": "meat"
+    },
+    {
+        "name": "Рыба",
+        "color": "lime",
+        "slug": "fish"
+    }
+]

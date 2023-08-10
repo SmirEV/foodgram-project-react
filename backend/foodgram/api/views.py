@@ -6,6 +6,9 @@ from rest_framework.decorators import action
 from rest_framework import status
 from django.db import IntegrityError
 from django.http import HttpResponse, FileResponse
+from django_filters.rest_framework import FilterSet, filters, DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from django.shortcuts import get_object_or_404
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -20,8 +23,43 @@ from api.serializers import (IngredientSerializer, TagSerializer,
                              RecipeSerializer, RecipeCreateSerializer,
                              AuthorSerializer, UserCreateSerializer,
                              AuthorWithRecipesSerializer,
-                             RecipeShortSerializer)
+                             RecipeShortSerializer, FavoritesSerializer,
+                             ShoppingCartSerializer)
 from api.pagination import CustomPagination
+
+
+class IngredientFilter(SearchFilter):
+    search_param = 'name'
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
+
+
+class RecipeFilter(FilterSet):
+    tags = filters.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all(),
+    )
+    is_favorited = filters.NumberFilter(method='filter_is_favorited')
+    is_in_shopping_cart = filters.NumberFilter(
+        method='filter_is_in_shopping_cart'
+    )
+
+    class Meta:
+        model = Recipe
+        fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart',)
+
+    def filter_is_favorited(self, queryset, name, value):
+        if value and self.request.user.is_authenticated:
+            return queryset.filter(favorite_recipe__user=self.request.user)
+        return queryset
+
+    def filter_is_in_shopping_cart(self, queryset, name, value):
+        if value and self.request.user.is_authenticated:
+            return queryset.filter(for_cooking__user=self.request.user)
+        return queryset
 
 
 def index(request):
@@ -29,10 +67,8 @@ def index(request):
 
 
 def generate_pdf(request, data):
-    # Create a file-like buffer to receive PDF data.
     buffer = io.BytesIO()
 
-    # Create the PDF object, using the buffer as its "file."
     pdf_canvas = canvas.Canvas(buffer, pagesize=A4)
     pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
     pdf_canvas.setFont("DejaVuSans", 18)
@@ -90,8 +126,10 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=False, methods=['get'])
     def subscriptions(self, request):
-        user = self.request.user
+        user = request.user
+        print(f'\n\n{user}\n\n')
         authors = User.objects.filter(following__user=user)
+        print(f'\n\n{authors}\n\n')
         serializer = AuthorWithRecipesSerializer(
                 instance=authors,
                 context={'request': request},
@@ -110,14 +148,16 @@ class IngredientViewSet(ModelViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.all().order_by('-id')
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
+    filterset_class = RecipeFilter
+    filter_backends = (DjangoFilterBackend, )
 
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
             'recipe_ingredients__ingredient',
-            'tags').all()
+            'tags').all().order_by('-id')
         return recipes
 
     def get_serializer_class(self):
@@ -142,7 +182,7 @@ class RecipeViewSet(ModelViewSet):
                 if i.name not in shopping_cart.keys():
                     shopping_cart.update({i.name: [amount, i.measurement_unit]})
                 elif i.measurement_unit == shopping_cart[i.name][-1]:
-                    shopping_cart.update({i.name: [amount, i.measurement_unit + shopping_cart[i.name][0]]})
+                    shopping_cart.update({i.name: [amount + shopping_cart[i.name][0], i.measurement_unit]})
                 else:
                     return Response(
                         {'error':
@@ -151,9 +191,57 @@ class RecipeViewSet(ModelViewSet):
                          f'{shopping_cart[i.name][-1]} и {i.measurement_unit}'})
         return generate_pdf(request, shopping_cart)
 
+    @action(
+        detail=True,
+        methods=('post',))
+    def favorite(self, request, pk):
+        context = {"request": request}
+        recipe = get_object_or_404(Recipe, id=pk)
+        data = {
+            'user': request.user.id,
+            'recipe': recipe.id
+        }
+        serializer = FavoritesSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @favorite.mapping.delete
+    def destroy_favorite(self, request, pk):
+        get_object_or_404(
+            Favorites,
+            user=request.user,
+            recipe=get_object_or_404(Recipe, id=pk)).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=True,
+        methods=('POST',))
+    def shopping_cart(self, request, pk):
+        context = {'request': request}
+        recipe = get_object_or_404(Recipe, id=pk)
+        data = {
+            'user': request.user.id,
+            'recipe': recipe.id
+        }
+        serializer = ShoppingCartSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @shopping_cart.mapping.delete
+    def destroy_shopping_cart(self, request, pk):
+        get_object_or_404(
+            MyShoppingCart,
+            user=request.user.id,
+            recipe=get_object_or_404(Recipe, id=pk)
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+'''
 class FavoriteViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.all().order_by('-id')
 
     def create(self, request, id=None):
         recipe = self.get_object()
@@ -212,3 +300,4 @@ class ShoppingCartViewSet(ModelViewSet):
 
     def get_object(self):
         return self.queryset.get(id=self.kwargs['id'])
+'''

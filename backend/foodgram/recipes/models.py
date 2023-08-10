@@ -24,14 +24,14 @@ class Recipe(models.Model):
         through_fields=('recipe', 'ingredient'),
         blank=False
         )
-    is_favorite = models.BooleanField()
-    is_in_shopping_cart = models.BooleanField()
+    is_favorite = models.BooleanField(default=False)
+    is_in_shopping_cart = models.BooleanField(default=False)
     name = models.CharField(
         max_length=200,
         blank=False,
         null=False)
     image = models.ImageField(
-        upload_to='images/',
+        upload_to='recipes/',
         # default='no_photo.jpg',
         blank=False,
         null=False)
