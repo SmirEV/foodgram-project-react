@@ -40,7 +40,6 @@ class Recipe(models.Model):
     text = models.TextField(
         blank=False,
         null=False)
-    # можно добавить валидацию?
     cooking_time = models.PositiveIntegerField(
         blank=False,
         null=False)
