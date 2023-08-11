@@ -1,13 +1,11 @@
 from django.contrib import admin
-
-from recipes.models import (Tag, Recipe, Ingredient,
-                            RecipeIngredient, IsSubscribed,
-                            Favorites, MyShoppingCart)
+from recipes.models import (Favorites, Ingredient, IsSubscribed,
+                            MyShoppingCart, Recipe, RecipeIngredient, Tag)
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'color', 'slug')
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -18,23 +16,28 @@ class RecipeIngredientInline(admin.TabularInline):
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     inlines = (RecipeIngredientInline, )
+    list_display = ('name', 'author', 'cooking_time')
+    search_fields = ('name', 'author')
+    list_filter = ('author', 'tags')
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'measurement_unit')
+    search_fields = ('name',)
+    list_filter = ('name',)
 
 
 @admin.register(IsSubscribed)
 class IsSubscribedAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user', 'author')
 
 
 @admin.register(Favorites)
 class FavoritesAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user', 'recipe')
 
 
 @admin.register(MyShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user', 'recipe')

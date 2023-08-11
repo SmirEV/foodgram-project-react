@@ -1,32 +1,29 @@
 import io
-from django.shortcuts import render, HttpResponse
-from djoser.views import UserViewSet
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.decorators import action
-from rest_framework import status
-from django.db import IntegrityError
-from django.http import HttpResponse, FileResponse
-from django_filters.rest_framework import FilterSet, filters, DjangoFilterBackend
-from rest_framework.filters import SearchFilter
-from django.shortcuts import get_object_or_404
 
-from reportlab.pdfgen import canvas
+from api.pagination import CustomPagination
+from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
+                             FavoritesSerializer, IngredientSerializer,
+                             RecipeCreateSerializer, RecipeSerializer,
+                             ShoppingCartSerializer, TagSerializer,
+                             UserCreateSerializer)
+from django.db import IntegrityError
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import (DjangoFilterBackend, FilterSet,
+                                           filters)
+from djoser.views import UserViewSet
+from recipes.models import (Favorites, Ingredient, IsSubscribed,
+                            MyShoppingCart, Recipe, RecipeIngredient, Tag,
+                            User)
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-
+from reportlab.pdfgen import canvas
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from recipes.models import (User,Tag, Recipe, Ingredient,
-                            IsSubscribed, Favorites,
-                            MyShoppingCart, RecipeIngredient)
-from api.serializers import (IngredientSerializer, TagSerializer,
-                             RecipeSerializer, RecipeCreateSerializer,
-                             AuthorSerializer, UserCreateSerializer,
-                             AuthorWithRecipesSerializer,
-                             RecipeShortSerializer, FavoritesSerializer,
-                             ShoppingCartSerializer)
-from api.pagination import CustomPagination
 
 
 class IngredientFilter(SearchFilter):
@@ -63,8 +60,23 @@ class RecipeFilter(FilterSet):
         return queryset
 
 
-def index(request):
-    return HttpResponse('index')
+class UserFilter(FilterSet):
+    username = filters.CharFilter(lookup_expr='icontains')
+    email = filters.CharFilter(lookup_expr='icontains')
+
+    class Meta:
+        model = User
+        fields = ('username', 'email',)
+
+    def filter_username(self, queryset, name, value):
+        if value:
+            return queryset.filter(username__icontains=value)
+        return queryset
+
+    def filter_email(self, queryset, name, value):
+        if value:
+            return queryset.filter(email__icontains=value)
+        return queryset
 
 
 def generate_pdf(request, data):
@@ -93,6 +105,8 @@ def generate_pdf(request, data):
 class CustomUserViewSet(UserViewSet):
     serializer_class = AuthorSerializer
     pagination_class = CustomPagination
+    filterset_class = UserFilter
+    filter_backends = (DjangoFilterBackend, )
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -125,8 +139,10 @@ class CustomUserViewSet(UserViewSet):
             IsSubscribed(id=id).delete()
             return Response()
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False,
+            methods=['post'])
     def set_password(self, request):
+        print(request.data)
         user = request.user
         current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
@@ -145,7 +161,9 @@ class CustomUserViewSet(UserViewSet):
 class AuthorViewSet(UserViewSet):
     serializer_class = AuthorWithRecipesSerializer
     pagination_class = CustomPagination
- 
+    filterset_class = UserFilter
+    filter_backends = (DjangoFilterBackend, )
+
     def get_queryset(self):
         user = self.request.user
         queryset = User.objects.filter(following__user=user)
@@ -185,7 +203,8 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def download_shopping_cart(self, request):
-        user = User.objects.prefetch_related('cooker__recipe').get(id=request.user.id)
+        user = User.objects.prefetch_related('cooker__recipe').get(
+            id=request.user.id)
         recipe_ids = user.cooker.all().values_list('recipe', flat=True)
         shopping_cart = dict()
         for ind in recipe_ids:
@@ -195,15 +214,19 @@ class RecipeViewSet(ModelViewSet):
                 amount = RecipeIngredient.objects.get(
                     ingredient=i, recipe=recipe).amount
                 if i.name not in shopping_cart.keys():
-                    shopping_cart.update({i.name: [amount, i.measurement_unit]})
+                    shopping_cart.update(
+                        {i.name: [amount, i.measurement_unit]})
                 elif i.measurement_unit == shopping_cart[i.name][-1]:
-                    shopping_cart.update({i.name: [amount + shopping_cart[i.name][0], i.measurement_unit]})
+                    shopping_cart.update({i.name: [
+                        amount + shopping_cart[i.name][0],
+                        i.measurement_unit]})
                 else:
                     return Response(
                         {'error':
                          'Ошибка добавления в список покупок: ' +
                          'невозможно сложить величины ' +
-                         f'{shopping_cart[i.name][-1]} и {i.measurement_unit}'})
+                         f'{shopping_cart[i.name][-1]} ' +
+                         f'и {i.measurement_unit}'})
         return generate_pdf(request, shopping_cart)
 
     @action(

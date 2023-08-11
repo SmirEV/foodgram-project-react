@@ -1,12 +1,9 @@
 ﻿import webcolors
-
-from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
-
-from recipes.models import (Tag, Ingredient,
-                            Recipe, RecipeIngredient,
-                            User, IsSubscribed,
-                            Favorites, MyShoppingCart)
+from recipes.models import (Favorites, Ingredient, IsSubscribed,
+                            MyShoppingCart, Recipe, RecipeIngredient, Tag,
+                            User)
+from rest_framework import serializers
 
 
 class NameToHexColor(serializers.Field):
@@ -55,7 +52,24 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username',
-                  'first_name', 'last_name')
+                  'first_name', 'last_name', 'password')
+    
+    def create(self, validated_data):
+        username = validated_data.pop('username')
+        first_name = validated_data.pop('first_name')
+        last_name = validated_data.pop('last_name')
+        email = validated_data.pop('email')
+        password = validated_data.pop('password')
+
+        user = User.objects.create_user(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=password)
+        user.save()
+
+        return user
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -71,9 +85,9 @@ class AuthorSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         print(request)
         user = request.user
-        return len(IsSubscribed.objects.all().filter(
-            author=instance.id,
-            user=user)) == 1
+        return (user.is_authenticated and
+                len(IsSubscribed.objects.all().
+                    filter(author=instance.id, user=user)) == 1)
 
 
 class AuthorWithRecipesSerializer(AuthorSerializer):
@@ -118,9 +132,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorite(self, instance):
         request = self.context.get('request')
         user = request.user
-        return len(Favorites.objects.all().filter(
-            recipe=instance.id,
-            user=user)) == 1
+        return (user.is_authenticated and
+                len(Favorites.objects.all().
+                    filter(recipe=instance.id, user=user)) == 1)
 
 
 class RecipeShortSerializer(RecipeSerializer):

@@ -7,3 +7,4 @@ webcolors
 reportlab
 drf-extra-fields
 django-filter-23.2
+isort

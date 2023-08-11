@@ -1,6 +1,6 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import F, Q, CheckConstraint, UniqueConstraint 
+from django.db import models
+from django.db.models import CheckConstraint, F, Q, UniqueConstraint
 
 User = get_user_model()
 
@@ -9,6 +9,9 @@ class Tag(models.Model):
     name = models.CharField(max_length=200)
     color = models.CharField(max_length=7)
     slug = models.SlugField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -41,6 +44,9 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField(
         blank=False,
         null=False)
+
+    def __str__(self):
+        return self.name
 
 
 class Ingredient(models.Model):

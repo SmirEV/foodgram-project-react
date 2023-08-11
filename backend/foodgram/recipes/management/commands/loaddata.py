@@ -1,20 +1,12 @@
 ﻿import json
 import os
+import urllib.request
 
 from django.conf import settings
-from django.core.management import BaseCommand
-import urllib.request
 from django.core.files import File
 from django.core.files.base import ContentFile
-
-from recipes.models import (
-    Ingredient,
-    Tag,
-    Recipe,
-    RecipeIngredient,
-    User
-)
-
+from django.core.management import BaseCommand
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag, User
 
 TABLES_DICT = {
     Ingredient: 'ingredients.json',
