@@ -216,17 +216,10 @@ class RecipeViewSet(ModelViewSet):
                 if i.name not in shopping_cart.keys():
                     shopping_cart.update(
                         {i.name: [amount, i.measurement_unit]})
-                elif i.measurement_unit == shopping_cart[i.name][-1]:
+                else:
                     shopping_cart.update({i.name: [
                         amount + shopping_cart[i.name][0],
                         i.measurement_unit]})
-                else:
-                    return Response(
-                        {'error':
-                         'Ошибка добавления в список покупок: ' +
-                         'невозможно сложить величины ' +
-                         f'{shopping_cart[i.name][-1]} ' +
-                         f'и {i.measurement_unit}'})
         return generate_pdf(request, shopping_cart)
 
     @action(

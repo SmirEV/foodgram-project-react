@@ -53,7 +53,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'email', 'username',
                   'first_name', 'last_name', 'password')
-    
+
     def create(self, validated_data):
         username = validated_data.pop('username')
         first_name = validated_data.pop('first_name')
@@ -85,9 +85,10 @@ class AuthorSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         print(request)
         user = request.user
-        return (user.is_authenticated and
-                len(IsSubscribed.objects.all().
-                    filter(author=instance.id, user=user)) == 1)
+        if user.is_authenticated:
+            return len(IsSubscribed.objects.all().
+                       filter(author=instance.id, user=user)) == 1
+        return False
 
 
 class AuthorWithRecipesSerializer(AuthorSerializer):
@@ -132,9 +133,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorite(self, instance):
         request = self.context.get('request')
         user = request.user
-        return (user.is_authenticated and
-                len(Favorites.objects.all().
-                    filter(recipe=instance.id, user=user)) == 1)
+        if user.is_authenticated:
+            return len(Favorites.objects.all().filter(
+                recipe=instance.id, user=user)) == 1
+        return False
 
 
 class RecipeShortSerializer(RecipeSerializer):

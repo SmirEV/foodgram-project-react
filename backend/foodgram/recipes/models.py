@@ -25,8 +25,7 @@ class Recipe(models.Model):
         'Ingredient',
         through='RecipeIngredient',
         through_fields=('recipe', 'ingredient'),
-        blank=False
-        )
+        blank=False)
     is_favorite = models.BooleanField(default=False)
     is_in_shopping_cart = models.BooleanField(default=False)
     name = models.CharField(

@@ -3,7 +3,6 @@ import os
 import urllib.request
 
 from django.conf import settings
-from django.core.files import File
 from django.core.files.base import ContentFile
 from django.core.management import BaseCommand
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag, User
@@ -21,17 +20,18 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
 
         for model, file in TABLES_DICT.items():
-            with open(
-                    f'{settings.FILE_DIR}/{file}', 'r', encoding='utf-8-sig') as f:
+            with open(f'{settings.FILE_DIR}/{file}',
+                      'r',
+                      encoding='utf-8-sig') as f:
                 datas = json.loads(f.read())
                 if model == Recipe:
                     for data in datas:
                         image_url = data.pop('image')
                         response = urllib.request.urlopen(image_url)
-                        #image = File(response)
                         image_content = response.read()
                         image_name = os.path.basename(image_url)
-                        image_file = ContentFile(image_content, name=image_name)
+                        image_file = ContentFile(image_content,
+                                                 name=image_name)
 
                         ingredients_data = data.pop('ingredients')
                         for ing in ingredients_data:
@@ -41,8 +41,8 @@ class Command(BaseCommand):
 
                         tags_data = data.pop('tags')
 
-                        recipe = Recipe.objects.create(**data,
-                                                       author=User.objects.get(id=2))
+                        recipe = Recipe.objects.create(
+                            **data, author=User.objects.get(id=2))
                         recipe.tags.set(tags_data)
                         recipe.image.save(image_name, image_file)
 
@@ -50,7 +50,8 @@ class Command(BaseCommand):
                         for ingredient_data in ingredients_data:
                             ingredient_list.append(
                                 RecipeIngredient(
-                                    ingredient=Ingredient.objects.get(id=ingredient_data.pop('id')),
+                                    ingredient=Ingredient.objects.get(
+                                        id=ingredient_data.pop('id')),
                                     amount=ingredient_data.pop('amount'),
                                     recipe=recipe))
                         RecipeIngredient.objects.bulk_create(ingredient_list)
