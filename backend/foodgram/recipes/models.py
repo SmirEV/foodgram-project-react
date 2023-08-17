@@ -2,19 +2,26 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import CheckConstraint, F, Q, UniqueConstraint
 
+
 User = get_user_model()
 
 
 class Tag(models.Model):
+    """ Модель тегов для рецептов. """
     name = models.CharField(max_length=200)
     color = models.CharField(max_length=7)
     slug = models.SlugField(max_length=200, unique=True)
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
     def __str__(self):
         return self.name
 
 
 class Recipe(models.Model):
+    """ Модель рецептов. """
     tags = models.ManyToManyField(
         Tag,
         blank=False)
@@ -43,16 +50,26 @@ class Recipe(models.Model):
         blank=False,
         null=False)
 
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
     def __str__(self):
         return self.name
 
 
 class Ingredient(models.Model):
+    """ Модель ингредиентов для рецептов. """
     name = models.CharField(max_length=200)
     measurement_unit = models.CharField(max_length=200)
 
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
 
 class RecipeIngredient(models.Model):
+    """ Связь ингредиентов и рецептов. """
     recipe = models.ForeignKey(
         Recipe,
         related_name='recipe_ingredients',
@@ -62,7 +79,7 @@ class RecipeIngredient(models.Model):
 
 
 class IsSubscribed(models.Model):
-    """Модель для работы с подписками."""
+    """ Модель для работы с подписками. """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -88,7 +105,7 @@ class IsSubscribed(models.Model):
 
 
 class Favorites(models.Model):
-    """Модель для работы с избранным."""
+    """ Модель для работы с избранным. """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -114,7 +131,7 @@ class Favorites(models.Model):
 
 
 class MyShoppingCart(models.Model):
-    """Модель для работы с корзиной."""
+    """ Модель для работы с корзиной. """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

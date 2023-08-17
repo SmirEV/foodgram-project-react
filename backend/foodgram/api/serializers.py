@@ -1,12 +1,15 @@
 ﻿import webcolors
+
+from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
+
 from recipes.models import (Favorites, Ingredient, IsSubscribed,
                             MyShoppingCart, Recipe, RecipeIngredient, Tag,
                             User)
-from rest_framework import serializers
 
 
 class NameToHexColor(serializers.Field):
+    """ Класс для перевода именованных цветов в 16-е представление. """
     def to_representation(self, value):
         return value
 
@@ -19,6 +22,7 @@ class NameToHexColor(serializers.Field):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """ Сериализатор тегов. """
     color = NameToHexColor()
 
     class Meta:
@@ -27,6 +31,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """ Сериализатор ингредиентов. """
 
     class Meta:
         model = Ingredient
@@ -34,6 +39,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
+    """ Сериализатор ингредиентов для рецептов. """
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
@@ -48,6 +54,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    """ Сериализатор для создания пользователя. """
 
     class Meta:
         model = User
@@ -73,6 +80,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class AuthorSerializer(serializers.ModelSerializer):
+    """ Сериализатор авторов рецептов. """
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -83,15 +91,14 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, instance):
         request = self.context.get('request')
-        print(request)
         user = request.user
-        if user.is_authenticated:
-            return len(IsSubscribed.objects.all().
-                       filter(author=instance.id, user=user)) == 1
-        return False
+        return (user.is_authenticated and
+                IsSubscribed.objects.all().
+                filter(author=instance.id, user=user).exists())
 
 
 class AuthorWithRecipesSerializer(AuthorSerializer):
+    """ Сериализатор авторов с их рецептами и их количеством. """
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
@@ -109,11 +116,11 @@ class AuthorWithRecipesSerializer(AuthorSerializer):
                                      many=True).data
 
     def get_recipes_count(self, instance):
-        recipes = instance.recipe_set.all()
-        return len(recipes)
+        return instance.recipe_set.all().count()
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """ Сериализатор рецептов. """
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
     author = AuthorSerializer()
@@ -140,6 +147,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(RecipeSerializer):
+    """ Сериализатор для вывода рецептов в укороченном формате. """
 
     class Meta:
         model = Recipe
@@ -147,6 +155,7 @@ class RecipeShortSerializer(RecipeSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
+    """ Сериализатор для создания рецептов. """
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all())
@@ -162,15 +171,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def create_ingredients_list(recipe, ingredients_data):
-        ingredient_list = []
-        for ingredient_data in ingredients_data:
-            ingredient_list.append(
-                RecipeIngredient(
-                    ingredient=ingredient_data.pop('id'),
-                    amount=ingredient_data.pop('amount'),
-                    recipe=recipe,
-                )
-            )
+        ingredient_list = [
+            RecipeIngredient(
+                ingredient=ingredient_data.pop('id'),
+                amount=ingredient_data.pop('amount'),
+                recipe=recipe) for ingredient_data in ingredients_data]
         RecipeIngredient.objects.bulk_create(ingredient_list)
 
     def create(self, validated_data):
@@ -199,7 +204,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 
 class FavoritesSerializer(serializers.ModelSerializer):
-    """  Сериализатор избранных рецептов """
+    """ Сериализатор избранных рецептов. """
 
     class Meta:
         model = Favorites
@@ -213,7 +218,7 @@ class FavoritesSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-    """Сериализатор для списка покупок """
+    """ Сериализатор для списка покупок. """
 
     class Meta:
         model = MyShoppingCart
