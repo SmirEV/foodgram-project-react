@@ -1,11 +1,20 @@
 ﻿from django_filters.rest_framework import FilterSet, filters
-from rest_framework.filters import SearchFilter
+from django.db.models import Q
+import django_filters
 from recipes.models import Ingredient, Recipe, Tag, User
 
 
-class IngredientFilter(SearchFilter):
+class IngredientsNameFilter(django_filters.Filter):
+    """ Фильтр для поиска по первым символам названия. """
+    def filter(self, qs, value):
+        if value:
+            return qs.filter(Q(name__istartswith=value))
+        return qs
+
+
+class IngredientFilter(FilterSet):
     """ Фильтр для ингредиентов. """
-    search_param = 'name'
+    name = IngredientsNameFilter()
 
     class Meta:
         model = Ingredient

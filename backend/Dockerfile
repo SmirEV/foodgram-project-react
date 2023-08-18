@@ -1,9 +1,15 @@
-﻿FROM python:3.8
+﻿FROM python:3.9
+
 WORKDIR /app
+
 RUN pip install gunicorn==20.1.0
+
 COPY requirements.txt .
-RUN apt-get update && apt-get upgrade -y && \
-    pip install --upgrade pip && pip install -r requirements.txt --no-cache-dir --default-timeout=100
+
+RUN pip install -r /app/requirements.txt --no-cache-dir
+
 COPY . .
-WORKDIR ./foodgram
-CMD ["gunicorn", "foodgram.wsgi", "--bind", "0:8080" ]
+
+WORKDIR /app/foodgram
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi"]

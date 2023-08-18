@@ -18,6 +18,12 @@ class Command(BaseCommand):
     help = 'Load data from file'
 
     def handle(self, *args, **kwargs):
+        user = User.objects.create_user(
+            email='email@test.ru',
+            username='test',
+            first_name='test',
+            last_name='testtest',
+            password='testpassword')
 
         for model, file in TABLES_DICT.items():
             with open(f'{settings.FILE_DIR}/{file}',
@@ -42,7 +48,7 @@ class Command(BaseCommand):
                         tags_data = data.pop('tags')
 
                         recipe = Recipe.objects.create(
-                            **data, author=User.objects.get(id=2))
+                            **data, author=user)
                         recipe.tags.set(tags_data)
                         recipe.image.save(image_name, image_file)
 

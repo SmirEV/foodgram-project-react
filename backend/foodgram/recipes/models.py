@@ -9,7 +9,7 @@ User = get_user_model()
 class Tag(models.Model):
     """ Модель тегов для рецептов. """
     name = models.CharField(max_length=200)
-    color = models.CharField(max_length=7)
+    color = models.CharField(max_length=20)
     slug = models.SlugField(max_length=200, unique=True)
 
     class Meta:
