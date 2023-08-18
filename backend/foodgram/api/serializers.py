@@ -92,8 +92,8 @@ class AuthorSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, instance):
         request = self.context.get('request')
         user = request.user
-        return (user.is_authenticated and
-                IsSubscribed.objects.all().
+        return (user.is_authenticated
+                and IsSubscribed.objects.all().
                 filter(author=instance.id, user=user).exists())
 
 
