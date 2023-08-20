@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -29,6 +30,7 @@ class CustomUserViewSet(UserViewSet):
     pagination_class = CustomPagination
     filterset_class = UserFilter
     filter_backends = (DjangoFilterBackend, )
+    permission_classes = (AllowAny, )
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -127,12 +129,20 @@ class RecipeViewSet(ModelViewSet):
             'tags').all().order_by('-id')
         return recipes
 
+    #def get_serializer_class(self):
+    #    if self.action in ('create', 'update'):
+    #        return RecipeCreateSerializer
+    #    return RecipeSerializer
+
     def get_serializer_class(self):
         if self.action == 'get':
             return RecipeSerializer
         return RecipeCreateSerializer
 
     def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
         serializer.save(author=self.request.user)
 
     @action(detail=False, methods=['get'])

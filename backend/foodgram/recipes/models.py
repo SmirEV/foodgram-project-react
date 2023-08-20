@@ -20,35 +20,55 @@ class Tag(models.Model):
         return self.name
 
 
+class Ingredient(models.Model):
+    """ Модель ингредиентов для рецептов. """
+    name = models.CharField(max_length=200)
+    measurement_unit = models.CharField(max_length=20)
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return f'{self.name}, {self.measurement_unit}.'
+
+
 class Recipe(models.Model):
     """ Модель рецептов. """
     tags = models.ManyToManyField(
         Tag,
-        blank=False)
+        blank=False,
+        verbose_name='Тег')
     author = models.ForeignKey(
         User,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,
+        verbose_name='Автор')
     ingredients = models.ManyToManyField(
-        'Ingredient',
+        Ingredient,
         through='RecipeIngredient',
         through_fields=('recipe', 'ingredient'),
-        blank=False)
+        blank=False,
+        verbose_name='Ингредиенты')
     is_favorite = models.BooleanField(default=False)
     is_in_shopping_cart = models.BooleanField(default=False)
     name = models.CharField(
         max_length=200,
         blank=False,
-        null=False)
+        null=False,
+        verbose_name='Название')
     image = models.ImageField(
+        verbose_name='Ссылка на картинку',
         upload_to='recipes/',
         blank=False,
         null=False)
     text = models.TextField(
         blank=False,
-        null=False)
+        null=False,
+        verbose_name='Способ приготовления')
     cooking_time = models.PositiveIntegerField(
         blank=False,
-        null=False)
+        null=False,
+        verbose_name='Время приготовления (мин)')
 
     class Meta:
         verbose_name = 'Рецепт'
@@ -58,24 +78,20 @@ class Recipe(models.Model):
         return self.name
 
 
-class Ingredient(models.Model):
-    """ Модель ингредиентов для рецептов. """
-    name = models.CharField(max_length=200)
-    measurement_unit = models.CharField(max_length=200)
-
-    class Meta:
-        verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Ингредиенты'
-
-
 class RecipeIngredient(models.Model):
     """ Связь ингредиентов и рецептов. """
     recipe = models.ForeignKey(
         Recipe,
         related_name='recipe_ingredients',
+        verbose_name='Рецепт',
         on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    amount = models.PositiveIntegerField()
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиент',
+        related_name='ingredient')
+    amount = models.PositiveIntegerField(
+        verbose_name='Количество')
 
 
 class IsSubscribed(models.Model):

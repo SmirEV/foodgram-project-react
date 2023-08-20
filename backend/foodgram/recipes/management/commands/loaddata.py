@@ -12,24 +12,25 @@ TABLES_DICT = {
     Tag: 'tags.json',
     Recipe: 'recipes.json'
 }
-
+USERS_COUNT = 3
 
 class Command(BaseCommand):
     help = 'Load data from file'
 
     def handle(self, *args, **kwargs):
-        user = User.objects.create_user(
-            email='email@test.ru',
-            username='test',
-            first_name='test',
-            last_name='testtest',
-            password='testpassword')
+        users = [User.objects.create_user(
+            email=f'email{i}@test.ru',
+            username=f'test{i}',
+            first_name=f'test{i}',
+            last_name=f'testtest{i}',
+            password=f'testpassword{i}') for i in range(USERS_COUNT)]
 
         for model, file in TABLES_DICT.items():
             with open(f'{settings.FILE_DIR}/{file}',
                       'r',
                       encoding='utf-8-sig') as f:
                 datas = json.loads(f.read())
+                recipe_num = 0
                 if model == Recipe:
                     for data in datas:
                         image_url = data.pop('image')
@@ -48,7 +49,7 @@ class Command(BaseCommand):
                         tags_data = data.pop('tags')
 
                         recipe = Recipe.objects.create(
-                            **data, author=user)
+                            **data, author=users[recipe_num % USERS_COUNT])
                         recipe.tags.set(tags_data)
                         recipe.image.save(image_name, image_file)
 
@@ -61,6 +62,7 @@ class Command(BaseCommand):
                                     amount=ingredient_data.pop('amount'),
                                     recipe=recipe))
                         RecipeIngredient.objects.bulk_create(ingredient_list)
+                        recipe_num += 1
                 else:
                     for data in datas:
                         model.objects.get_or_create(**data)

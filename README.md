@@ -39,13 +39,24 @@
 
 6. Собираем статику для админки:
 ```docker compose exec backend python manage.py collectstatic
+```docker compose exec backend cp -r /app/foodgram/collected_static/. /backend_static/static/ 
 
-7. Также можно создать тестового пользователя и подгрузить данные для просмотра рецептов:
+7. Также можно создать тестовых пользователей и подгрузить данные для просмотра рецептов:
 ```docker compose exec backend python manage.py loaddata
 
 После этого можно зайти на сайт проекта по ссылке http://localhost:8000/recipes с учетными данными:
-Электронная почта: email@test.ru
-Пароль: testpassword
+
+Пользователь 1:
+Электронная почта: email0@test.ru
+Пароль: testpassword0
+
+Пользователь 2:
+Электронная почта: email1@test.ru
+Пароль: testpassword1
+
+Пользователь 3:
+Электронная почта: email2@test.ru
+Пароль: testpassword2
 
 8. Или создать суперпользователя:
 ```docker compose exec backend python manage.py createsuperuser
