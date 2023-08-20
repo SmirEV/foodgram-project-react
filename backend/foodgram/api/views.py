@@ -1,22 +1,23 @@
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from api.filters import IngredientFilter, RecipeFilter, UserFilter
 from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              FavoritesSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
                              ShoppingCartSerializer, TagSerializer,
                              UserCreateSerializer)
-from api.filters import IngredientFilter, RecipeFilter, UserFilter
 from api.utils import generate_pdf
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
 from recipes.models import (Favorites, Ingredient, IsSubscribed,
                             MyShoppingCart, Recipe, RecipeIngredient, Tag,
                             User)
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 
 
 class CustomUserViewSet(UserViewSet):
@@ -36,6 +37,12 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=True, methods=['post', 'delete'])
     def subscribe(self, request, id=None):
+        '''
+        Поняла замечание про валидацию. В моем представлении
+        для того, чтобы сделать валидацию для IsSubscribed на уровне сериализатора,
+        нужно написать для этой модели отдельный сериализатор + отдельную вьюху. Перепишу
+        вечером, если не проверите до ночи)
+        '''
         user = self.request.user
         author = User.objects.get(id=id)
         if request.method == 'POST':
