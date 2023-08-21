@@ -1,13 +1,3 @@
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-
 from api.filters import IngredientFilter, RecipeFilter, UserFilter
 from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
@@ -16,9 +6,17 @@ from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              ShoppingCartSerializer, TagSerializer,
                              UserCreateSerializer)
 from api.utils import generate_pdf
-from recipes.models import (Favorites, Ingredient, Subscribtions,
-                            MyShoppingCart, Recipe, RecipeIngredient, Tag,
-                            User)
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from recipes.models import (Favorites, Ingredient, MyShoppingCart, Recipe,
+                            RecipeIngredient, Subscribtions, Tag, User)
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 
 class CustomUserViewSet(UserViewSet):

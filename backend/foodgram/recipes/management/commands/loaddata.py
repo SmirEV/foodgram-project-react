@@ -14,6 +14,7 @@ TABLES_DICT = {
 }
 USERS_COUNT = 3
 
+
 class Command(BaseCommand):
     help = 'Load data from file'
 

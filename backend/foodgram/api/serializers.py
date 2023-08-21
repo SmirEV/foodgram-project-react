@@ -1,10 +1,8 @@
 ﻿import webcolors
 from drf_extra_fields.fields import Base64ImageField
+from recipes.models import (Favorites, Ingredient, MyShoppingCart, Recipe,
+                            RecipeIngredient, Subscribtions, Tag, User)
 from rest_framework import serializers
-
-from recipes.models import (Favorites, Ingredient, Subscribtions,
-                            MyShoppingCart, Recipe, RecipeIngredient, Tag,
-                            User)
 
 
 class NameToHexColor(serializers.Field):
