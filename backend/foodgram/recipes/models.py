@@ -8,9 +8,16 @@ User = get_user_model()
 
 class Tag(models.Model):
     """ Модель тегов для рецептов. """
-    name = models.CharField(max_length=200)
-    color = models.CharField(max_length=20)
-    slug = models.SlugField(max_length=200, unique=True)
+    name = models.CharField(
+        max_length=200,
+        verbose_name='Тег')
+    color = models.CharField(
+        max_length=20,
+        verbose_name='Цвет')
+    slug = models.SlugField(
+        max_length=200,
+        unique=True,
+        verbose_name='Псевдоним')
 
     class Meta:
         verbose_name = 'Тег'
@@ -22,8 +29,12 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     """ Модель ингредиентов для рецептов. """
-    name = models.CharField(max_length=200)
-    measurement_unit = models.CharField(max_length=20)
+    name = models.CharField(
+        max_length=200,
+        verbose_name='Ингредиент')
+    measurement_unit = models.CharField(
+        max_length=20,
+        verbose_name='Единица измерения')
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -38,7 +49,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         blank=False,
-        verbose_name='Тег')
+        verbose_name='Теги')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -49,13 +60,17 @@ class Recipe(models.Model):
         through_fields=('recipe', 'ingredient'),
         blank=False,
         verbose_name='Ингредиенты')
-    is_favorite = models.BooleanField(default=False)
-    is_in_shopping_cart = models.BooleanField(default=False)
+    is_favorite = models.BooleanField(
+        default=False,
+        verbose_name='Избранное')
+    is_in_shopping_cart = models.BooleanField(
+        default=False,
+        verbose_name='В корзине')
     name = models.CharField(
         max_length=200,
         blank=False,
         null=False,
-        verbose_name='Название')
+        verbose_name='Название рецепта')
     image = models.ImageField(
         verbose_name='Ссылка на картинку',
         upload_to='recipes/',
@@ -94,7 +109,7 @@ class RecipeIngredient(models.Model):
         verbose_name='Количество')
 
 
-class IsSubscribed(models.Model):
+class Subscribtions(models.Model):
     """ Модель для работы с подписками. """
     user = models.ForeignKey(
         User,

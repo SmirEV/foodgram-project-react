@@ -1,5 +1,5 @@
 from django.contrib import admin
-from recipes.models import (Favorites, Ingredient, IsSubscribed,
+from recipes.models import (Favorites, Ingredient, Subscribtions,
                             MyShoppingCart, Recipe, RecipeIngredient, Tag)
 
 
@@ -28,7 +28,7 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
 
-@admin.register(IsSubscribed)
+@admin.register(Subscribtions)
 class IsSubscribedAdmin(admin.ModelAdmin):
     list_display = ('user', 'author')
 

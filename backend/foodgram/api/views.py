@@ -16,7 +16,7 @@ from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              ShoppingCartSerializer, TagSerializer,
                              UserCreateSerializer)
 from api.utils import generate_pdf
-from recipes.models import (Favorites, Ingredient, IsSubscribed,
+from recipes.models import (Favorites, Ingredient, Subscribtions,
                             MyShoppingCart, Recipe, RecipeIngredient, Tag,
                             User)
 
@@ -39,12 +39,6 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=True, methods=['post', 'delete'])
     def subscribe(self, request, id=None):
-        '''
-        Поняла замечание про валидацию. В моем представлении
-        для того, чтобы сделать валидацию для IsSubscribed на уровне
-        сериализатора, нужно написать для этой модели отдельный сериализатор
-        + отдельную вьюху. Перепишу, если не проверите до ночи)
-        '''
         user = self.request.user
         author = User.objects.get(id=id)
         if request.method == 'POST':
@@ -53,7 +47,7 @@ class CustomUserViewSet(UserViewSet):
                     {'error': ' Ошибка подписки'},
                     status=status.HTTP_400_BAD_REQUEST)
             try:
-                IsSubscribed(
+                Subscribtions(
                     user=user,
                     author=author).save()
             except IntegrityError:
@@ -65,8 +59,8 @@ class CustomUserViewSet(UserViewSet):
                 context={'request': request})
             return Response(serializer.data)
         if request.method == 'DELETE':
-            id = IsSubscribed.objects.get(user=user, author=author).id
-            IsSubscribed(id=id).delete()
+            id = Subscribtions.objects.get(user=user, author=author).id
+            Subscribtions(id=id).delete()
             return Response()
 
     @action(detail=False,
@@ -128,11 +122,6 @@ class RecipeViewSet(ModelViewSet):
             'recipe_ingredients__ingredient',
             'tags').all().order_by('-id')
         return recipes
-
-    #def get_serializer_class(self):
-    #    if self.action in ('create', 'update'):
-    #        return RecipeCreateSerializer
-    #    return RecipeSerializer
 
     def get_serializer_class(self):
         if self.action == 'get':

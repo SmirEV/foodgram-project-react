@@ -2,7 +2,7 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import (Favorites, Ingredient, IsSubscribed,
+from recipes.models import (Favorites, Ingredient, Subscribtions,
                             MyShoppingCart, Recipe, RecipeIngredient, Tag,
                             User)
 
@@ -39,7 +39,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """ Сериализатор ингредиентов для рецептов. """
-    # id = serializers.ReadOnlyField(source='ingredient.id')
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
@@ -93,7 +92,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         user = request.user
         return (user.is_authenticated
-                and IsSubscribed.objects.all().
+                and Subscribtions.objects.all().
                 filter(author=instance.id, user=user).exists())
 
 
@@ -123,11 +122,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     """ Сериализатор рецептов. """
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
-    #ingredients = RecipeIngredientSerializer(
-    #    many=True,
-    #    read_only=True,
-    #    source='recipe_ingredients'
-    #)
     author = AuthorSerializer()
     is_favorite = serializers.SerializerMethodField()
     image = Base64ImageField(max_length=None)
@@ -165,10 +159,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Tag.objects.all())
     ingredients = RecipeIngredientSerializer(
-        many=True,
-        read_only=True,
-        #source='recipe_ingredients'
-    )
+        many=True,)
     author = serializers.SerializerMethodField()
     image = Base64ImageField(max_length=None)
 
@@ -202,7 +193,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients')
         self.create_ingredients_list(instance, ingredients_data)
         return super().update(instance, validated_data)
-        # return instance #???
 
     def get_author(self, instance):
         return AuthorSerializer(instance.author).data
