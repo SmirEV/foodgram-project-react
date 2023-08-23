@@ -142,6 +142,14 @@ class RecipeSerializer(serializers.ModelSerializer):
                 recipe=instance.id, user=user).exists()
         return False
 
+    def get_is_in_shopping_cart(self, instance):
+        request = self.context.get('request')
+        user = request.user
+        if user.is_authenticated:
+            return MyShoppingCart.objects.all().filter(
+                recipe=instance.id, user=user).exists()
+        return False
+
 
 class RecipeShortSerializer(RecipeSerializer):
     """ Сериализатор для вывода рецептов в укороченном формате. """
