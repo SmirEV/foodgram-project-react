@@ -22,9 +22,9 @@ class Command(BaseCommand):
         users = []
 
         for i in range(USERS_COUNT):
-            username = f'test{i}'
-            if User.objects.filter(username=username).exists():
-                users.append(User.objects.get(username=username))
+            email = f'email{i}@test.ru',
+            if User.objects.filter(email=email).exists():
+                users.append(User.objects.get(email=email))
             else:
                 new_user = User.objects.create_user(
                     email=f'email{i}@test.ru',
