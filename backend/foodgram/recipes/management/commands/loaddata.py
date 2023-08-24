@@ -31,7 +31,7 @@ class Command(BaseCommand):
                     username=f'test{i}',
                     first_name=f'test{i}',
                     last_name=f'testtest{i}',
-                    password=f'testpassword{i}') 
+                    password=f'testpassword{i}')
                 users.append(new_user)
 
         for model, file in TABLES_DICT.items():
