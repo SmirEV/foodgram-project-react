@@ -157,6 +157,7 @@ class RecipeViewSet(ModelViewSet):
     def favorite(self, request, pk):
         context = {"request": request}
         recipe = get_object_or_404(Recipe, id=pk)
+        recipe.is_favorite = True
         data = {
             'user': request.user.id,
             'recipe': recipe.id
@@ -168,10 +169,12 @@ class RecipeViewSet(ModelViewSet):
 
     @favorite.mapping.delete
     def destroy_favorite(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
         get_object_or_404(
             Favorites,
             user=request.user,
-            recipe=get_object_or_404(Recipe, id=pk)).delete()
+            recipe=recipe).delete()
+        recipe.is_favorite = False
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=('POST',))
@@ -182,6 +185,7 @@ class RecipeViewSet(ModelViewSet):
             'user': request.user.id,
             'recipe': recipe.id
         }
+        recipe.is_in_shopping_cart = True
         serializer = ShoppingCartSerializer(data=data, context=context)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -189,9 +193,11 @@ class RecipeViewSet(ModelViewSet):
 
     @shopping_cart.mapping.delete
     def destroy_shopping_cart(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
         get_object_or_404(
             MyShoppingCart,
             user=request.user.id,
-            recipe=get_object_or_404(Recipe, id=pk)
+            recipe=recipe
         ).delete()
+        recipe.is_in_shopping_cart = False
         return Response(status=status.HTTP_204_NO_CONTENT)
