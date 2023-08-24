@@ -116,13 +116,40 @@ class AuthorWithRecipesSerializer(AuthorSerializer):
         return instance.recipe_set.all().count()
 
 
+class FavoritesSerializer(serializers.ModelSerializer):
+    """ Сериализатор избранных рецептов. """
+
+    class Meta:
+        model = Favorites
+        fields = ('user', 'recipe',)
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe,
+            context={'request': self.context.get('request')}
+        ).data
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    """ Сериализатор для списка покупок. """
+
+    class Meta:
+        model = MyShoppingCart
+        fields = ('user', 'recipe',)
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe,
+            context={'request': self.context.get('request')}
+        ).data
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     """ Сериализатор рецептов. """
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
     author = AuthorSerializer()
-    is_favorited = serializers.SerializerMethodField(
-        method_name='get_is_favorited')
+    is_favorited = FavoritesSerializer()
     is_in_shopping_cart = serializers.SerializerMethodField(
         method_name='get_is_in_shopping_cart')
     image = Base64ImageField(max_length=None)
@@ -213,30 +240,3 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'request': self.context.get('request')
         }).data
 
-
-class FavoritesSerializer(serializers.ModelSerializer):
-    """ Сериализатор избранных рецептов. """
-
-    class Meta:
-        model = Favorites
-        fields = ('user', 'recipe',)
-
-    def to_representation(self, instance):
-        return RecipeShortSerializer(
-            instance.recipe,
-            context={'request': self.context.get('request')}
-        ).data
-
-
-class ShoppingCartSerializer(serializers.ModelSerializer):
-    """ Сериализатор для списка покупок. """
-
-    class Meta:
-        model = MyShoppingCart
-        fields = ('user', 'recipe',)
-
-    def to_representation(self, instance):
-        return RecipeShortSerializer(
-            instance.recipe,
-            context={'request': self.context.get('request')}
-        ).data
