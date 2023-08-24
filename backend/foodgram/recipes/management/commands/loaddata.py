@@ -19,12 +19,20 @@ class Command(BaseCommand):
     help = 'Load data from file'
 
     def handle(self, *args, **kwargs):
-        users = [User.objects.create_user(
-            email=f'email{i}@test.ru',
-            username=f'test{i}',
-            first_name=f'test{i}',
-            last_name=f'testtest{i}',
-            password=f'testpassword{i}') for i in range(USERS_COUNT)]
+        users = []
+
+        for i in range(USERS_COUNT):
+            username = f'test{i}'
+            if User.objects.filter(username=username).exists():
+                users.append(User.objects.get(username=username))
+            else:
+                new_user = User.objects.create_user(
+                    email=f'email{i}@test.ru',
+                    username=f'test{i}',
+                    first_name=f'test{i}',
+                    last_name=f'testtest{i}',
+                    password=f'testpassword{i}') 
+                users.append(new_user)
 
         for model, file in TABLES_DICT.items():
             with open(f'{settings.FILE_DIR}/{file}',
