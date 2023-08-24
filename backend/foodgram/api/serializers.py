@@ -135,19 +135,21 @@ class RecipeSerializer(serializers.ModelSerializer):
             many=True
         ).data
 
-    def get_is_favorite(self, instance):
-        request = self.context.get('request')
-        user = request.user
-        if user.is_authenticated:
-            return instance.favorite_recipe.filter(user=user).exists()
-        return False
+    def get_is_favorited(self, obj):
+        """ Проверка рецепта в списке избранного. """
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Favorites.objects.filter(recipe=obj,
+                                             user=user).exists()
 
-    def get_is_in_shopping_cart(self, instance):
-        request = self.context.get('request')
-        user = request.user
-        if user.is_authenticated:
-            return instance.in_shopping_cart.filter(user=user).exists()
-        return False
+    def get_is_in_shopping_cart(self, obj):
+        """ Проверка рецепта в корзине покупок. """
+        user = self.context.get('request').user
+        if not user or user.is_anonymous:
+            return False
+        return MyShoppingCart.objects.filter(recipe=obj,
+                                           user=user).exists()
 
 
 class RecipeShortSerializer(RecipeSerializer):
