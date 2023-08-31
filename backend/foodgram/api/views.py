@@ -14,7 +14,7 @@ from recipes.models import (Favorites, Ingredient, MyShoppingCart, Recipe,
                             RecipeIngredient, Subscribtions, Tag, User)
 from rest_framework import filters, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -66,7 +66,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(methods=['GET'],
             detail=False,
-            # permission_classes=(IsAuthenticated, )
+            permission_classes=(IsAuthenticated, )
             )
     def subscriptions(self, request):
         """ Получить на кого пользователь подписан. """
@@ -124,7 +124,7 @@ class IngredientViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     """ Вьюсет для рецептов. """
-    queryset = Recipe.objects.all().order_by('-id')
+    #queryset = Recipe.objects.all().order_by('-id')
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
     filterset_class = RecipeFilter
@@ -173,8 +173,8 @@ class RecipeViewSet(ModelViewSet):
         context = {"request": request}
         recipe = get_object_or_404(Recipe, id=pk)
         data = {
-            'user': request.user.id,
-            'recipe': recipe.id
+            'user': request.user,
+            'recipe': recipe
         }
         serializer = FavoritesSerializer(data=data, context=context)
         serializer.is_valid(raise_exception=True)
@@ -195,8 +195,8 @@ class RecipeViewSet(ModelViewSet):
         context = {'request': request}
         recipe = get_object_or_404(Recipe, id=pk)
         data = {
-            'user': request.user.id,
-            'recipe': recipe.id
+            'user': request.user,
+            'recipe': recipe
         }
         serializer = ShoppingCartSerializer(data=data, context=context)
         serializer.is_valid(raise_exception=True)
@@ -208,7 +208,6 @@ class RecipeViewSet(ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
         get_object_or_404(
             MyShoppingCart,
-            user=request.user.id,
-            recipe=recipe
-        ).delete()
+            user=request.user,
+            recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
