@@ -45,10 +45,6 @@ class CustomUserViewSet(UserViewSet):
                 return Response(
                     {'error': ' Ошибка подписки'},
                     status=status.HTTP_400_BAD_REQUEST)
-#            try:
-#                Subscribtions(
-#                    user=user,
-#                    author=author).save()
             serializer = SubscribeSerializer(
                 Subscribtions.objects.create(
                     user=request.user,
@@ -56,23 +52,16 @@ class CustomUserViewSet(UserViewSet):
                 context={'request': request})
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
-#            except IntegrityError:
-#                return Response(
-#                    {'error': 'Ошибка подписки'},
-#                    status=status.HTTP_400_BAD_REQUEST)
-#            serializer = AuthorSerializer(
-#                instance=author,
-#                context={'request': request})
-#            return Response(serializer.data)
         if request.method == 'DELETE':
             if Subscribtions.objects.filter(
                     user=request.user, author=author).exists():
                 Subscribtions.objects.filter(
                     user=request.user, author=author).delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(
-                {'errors': 'Вы не подписаны на этого автора.'},
-                status=status.HTTP_400_BAD_REQUEST,)
+            else:
+                return Response(
+                    {'errors': 'Вы не подписаны на этого автора.'},
+                    status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['GET'],
             detail=False,
