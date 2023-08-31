@@ -24,6 +24,7 @@ class CustomUserViewSet(UserViewSet):
     Вьюсет для эндпоинтов /users/,
     /users/subscribe, /users/set_password/.
     """
+    queryset = User.objects.all()
     serializer_class = AuthorSerializer
     pagination_class = CustomPagination
     # filterset_class = UserFilter
@@ -53,10 +54,10 @@ class CustomUserViewSet(UserViewSet):
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            if Subscribtions.objects.filter(
-                    user=request.user, author=author).exists():
-                Subscribtions.objects.filter(
-                    user=request.user, author=author).delete()
+            subscription = Subscribtions.objects.filter(
+                user=request.user, author=author).first()
+            if subscription:
+                subscription.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response(
