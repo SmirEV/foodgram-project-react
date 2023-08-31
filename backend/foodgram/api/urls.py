@@ -4,9 +4,9 @@ from django.urls import include, path
 from rest_framework import routers
 
 router = routers.DefaultRouter()
-router.register(r'users/subscriptions',
-                AuthorViewSet,
-                basename='subscriptions')
+#router.register(r'users/subscriptions',
+#                AuthorViewSet,
+#                basename='subscriptions')
 router.register('users', CustomUserViewSet)
 router.register(r'users/(?P<pk>\d+)/subscribe',
                 CustomUserViewSet,

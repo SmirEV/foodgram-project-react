@@ -3,8 +3,8 @@ from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              FavoritesSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
-                             ShoppingCartSerializer, TagSerializer,
-                             UserCreateSerializer)
+                             ShoppingCartSerializer, SubscribeSerializer,
+                             TagSerializer, UserCreateSerializer)
 from api.utils import generate_pdf
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
@@ -12,7 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Favorites, Ingredient, MyShoppingCart, Recipe,
                             RecipeIngredient, Subscribtions, Tag, User)
-from rest_framework import status
+from rest_framework import status, filters
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -26,8 +26,9 @@ class CustomUserViewSet(UserViewSet):
     """
     serializer_class = AuthorSerializer
     pagination_class = CustomPagination
-    filterset_class = UserFilter
-    filter_backends = (DjangoFilterBackend, )
+    # filterset_class = UserFilter
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    search_fields = ('username', 'email')
     permission_classes = (AllowAny, )
 
     def get_serializer_class(self):
@@ -44,22 +45,49 @@ class CustomUserViewSet(UserViewSet):
                 return Response(
                     {'error': ' Ошибка подписки'},
                     status=status.HTTP_400_BAD_REQUEST)
-            try:
-                Subscribtions(
-                    user=user,
-                    author=author).save()
-            except IntegrityError:
-                return Response(
-                    {'error': 'Ошибка подписки'},
-                    status=status.HTTP_400_BAD_REQUEST)
-            serializer = AuthorSerializer(
-                instance=author,
+#            try:
+#                Subscribtions(
+#                    user=user,
+#                    author=author).save()
+            serializer = SubscribeSerializer(
+                Subscribtions.objects.create(
+                    user=request.user,
+                    author=author),
                 context={'request': request})
-            return Response(serializer.data)
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+#            except IntegrityError:
+#                return Response(
+#                    {'error': 'Ошибка подписки'},
+#                    status=status.HTTP_400_BAD_REQUEST)
+#            serializer = AuthorSerializer(
+#                instance=author,
+#                context={'request': request})
+#            return Response(serializer.data)
         if request.method == 'DELETE':
-            id = Subscribtions.objects.get(user=user, author=author).id
-            Subscribtions(id=id).delete()
-            return Response()
+#            id = Subscribtions.objects.get(user=user, author=author).id
+#            Subscribtions(id=id).delete()
+#            return Response()
+            if Subscribtions.objects.filter(
+                    user=request.user, author=author).exists():
+                Subscribtions.objects.filter(
+                    user=request.user, author=author).delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(
+                {'errors': 'Вы не подписаны на этого автора.'},
+                status=status.HTTP_400_BAD_REQUEST,)
+
+    @action(methods=['GET'],
+            detail=False,
+            # permission_classes=(IsAuthenticated, )
+            )
+    def subscriptions(self, request):
+        """ Получить на кого пользователь подписан. """
+        serializer = SubscribeSerializer(
+            Subscribtions.objects.filter(user=request.user),
+            many=True,
+            context={'request': request})
+        return serializer.data
 
     @action(detail=False,
             methods=['post'])

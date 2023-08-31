@@ -239,3 +239,60 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return RecipeSerializer(instance, context={
             'request': self.context.get('request')
         }).data
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для подписчика.
+    """
+    id = serializers.IntegerField(source='author.id')
+    email = serializers.EmailField(source='author.email')
+    username = serializers.CharField(source='author.username')
+    first_name = serializers.CharField(source='author.first_name')
+    last_name = serializers.CharField(source='author.last_name')
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Subscribtions
+        fields = ('id', 'email', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count',)
+        read_only_fields = ('is_subscribed', 'recipes_count',)
+
+    def validate(self, data):
+        """ Проверка данных на уровне сериализатора. """
+        user_id = data['user_id']
+        author_id = data['author_id']
+        if user_id == author_id:
+            raise serializers.ValidationError({
+                'errors': 'Ошибка подписки! Нельзя подписаться на самого себя.'
+            })
+        if Subscribtions.objects.filter(
+                user=user_id,
+                author=author_id).exists():
+            raise serializers.ValidationError({
+                'errors': 'Ошибка подписки! Нельзя подписаться повторно.'
+            })
+        data['user'] = User.objects.get(User, id=user_id)
+        data['author'] = User.objects.get(User, id=author_id)
+        return data
+
+    def get_is_subscribed(self, obj):
+        """ Проверка подписки. """
+        return Subscribtions.objects.filter(
+            user=obj.user, author=obj.author).exists()
+
+    def get_recipes(self, obj):
+        """ Получение рецептов автора. """
+        request = self.context.get('request')
+        recipes_limit = request.GET.get('recipes_limit')
+        recipes = Recipe.objects.filter(author=obj.author)
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
+        serializer = RecipeShortSerializer(recipes, many=True)
+        return serializer.data
+
+    def get_recipes_count(self, obj):
+        """ Подсчет рецептов автора. """
+        return Recipe.objects.filter(author=obj.author).count()
