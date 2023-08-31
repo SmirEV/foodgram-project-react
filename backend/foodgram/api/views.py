@@ -6,13 +6,13 @@ from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              ShoppingCartSerializer, SubscribeSerializer,
                              TagSerializer, UserCreateSerializer)
 from api.utils import generate_pdf
-from django.db import IntegrityError
+# from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Favorites, Ingredient, MyShoppingCart, Recipe,
                             RecipeIngredient, Subscribtions, Tag, User)
-from rest_framework import status, filters
+from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -65,9 +65,6 @@ class CustomUserViewSet(UserViewSet):
 #                context={'request': request})
 #            return Response(serializer.data)
         if request.method == 'DELETE':
-#            id = Subscribtions.objects.get(user=user, author=author).id
-#            Subscribtions(id=id).delete()
-#            return Response()
             if Subscribtions.objects.filter(
                     user=request.user, author=author).exists():
                 Subscribtions.objects.filter(

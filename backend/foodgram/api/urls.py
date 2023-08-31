@@ -1,10 +1,10 @@
-﻿from api.views import (AuthorViewSet, CustomUserViewSet, IngredientViewSet,
+﻿from api.views import (CustomUserViewSet, IngredientViewSet,
                        RecipeViewSet, TagViewSet)
 from django.urls import include, path
 from rest_framework import routers
 
 router = routers.DefaultRouter()
-#router.register(r'users/subscriptions',
+# router.register(r'users/subscriptions',
 #                AuthorViewSet,
 #                basename='subscriptions')
 router.register('users', CustomUserViewSet)
