@@ -155,7 +155,9 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = '__all__'
+        fields = ('id', 'tags', 'ingredients', 'author',
+                  'is_favorited', 'image', 'is_in_shopping_cart',
+                  'name', 'text', 'cooking_time')
 
     def get_ingredients(self, instance):
         return RecipeIngredientSerializer(
