@@ -3,9 +3,9 @@ from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              FavoritesSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
-                             RecipeShortSerializer,
-                             ShoppingCartSerializer, SubscribeSerializer,
-                             TagSerializer, UserCreateSerializer)
+                             RecipeShortSerializer, ShoppingCartSerializer,
+                             SubscribeSerializer, TagSerializer,
+                             UserCreateSerializer)
 from api.utils import generate_pdf
 # from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
