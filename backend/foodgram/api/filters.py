@@ -1,8 +1,8 @@
 ﻿import django_filters
+from api.serializers import ShoppingCartSerializer
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet, filters
-from api.serializers import ShoppingCartSerializer
-from recipes.models import Ingredient, Recipe, MyShoppingCart, Tag, User
+from recipes.models import Ingredient, MyShoppingCart, Recipe, Tag, User
 
 
 class IngredientsNameFilter(django_filters.Filter):
