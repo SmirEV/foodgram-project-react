@@ -167,7 +167,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         """ Проверка рецепта в списке избранного. """
         user = self.context.get('request').user
-        #if user.is_anonymous:
+        # if user.is_anonymous:
         #    return False
         return Favorites.objects.filter(
             recipe=obj,
