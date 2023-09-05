@@ -140,8 +140,8 @@ class RecipeViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'get':
             return RecipeSerializer
-        elif 'is_in_shopping_cart' in self.request.query_params:
-            return RecipeShortSerializer
+        # elif 'is_in_shopping_cart' in self.request.query_params:
+        #    return RecipeShortSerializer
         return RecipeCreateSerializer
 
     def perform_create(self, serializer):
