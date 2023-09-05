@@ -3,7 +3,7 @@ from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              FavoritesSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
-                             RecipeShortSerializer, ShoppingCartSerializer,
+                             ShoppingCartSerializer,
                              SubscribeSerializer, TagSerializer,
                              UserCreateSerializer)
 from api.utils import generate_pdf
