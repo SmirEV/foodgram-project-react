@@ -1,7 +1,8 @@
 ﻿import django_filters
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet, filters
-from recipes.models import Ingredient, Recipe, Tag, User
+from api.serializers import ShoppingCartSerializer
+from recipes.models import Ingredient, Recipe, MyShoppingCart, Tag, User
 
 
 class IngredientsNameFilter(django_filters.Filter):
@@ -44,8 +45,15 @@ class RecipeFilter(FilterSet):
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
         user = self.request.user
+        # if value and user.is_authenticated:
+        #    return Recipe.objects.filter(for_cooking__user=user)
+        # return queryset
         if value and user.is_authenticated:
-            return Recipe.objects.filter(for_cooking__user=user)
+            serializer = ShoppingCartSerializer(
+                MyShoppingCart.objects.filter(user=user),
+                many=True,
+                context={'request': self.request})
+            return serializer.data
         return queryset
 
 
