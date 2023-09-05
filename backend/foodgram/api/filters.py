@@ -47,13 +47,11 @@ class RecipeFilter(FilterSet):
         # if value and user.is_authenticated:
         #    return queryset.filter(for_cooking__user=user)
         # return queryset
-        if value and user.is_authenticated:
-            serializer = ShoppingCartSerializer(
-                MyShoppingCart.objects.filter(user=user),
-                many=True,
-                context={'request': self.request})
-            return serializer.data
-        return queryset
+        serializer = ShoppingCartSerializer(
+            MyShoppingCart.objects.filter(user=user),
+            many=True,
+            context={'request': self.request})
+        return serializer.data
 
 
 class UserFilter(FilterSet):
