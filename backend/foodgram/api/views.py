@@ -139,8 +139,6 @@ class RecipeViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'get':
-            if 'is_in_shopping_cart' in self.request.GET:
-                return RecipeShortSerializer
             return RecipeSerializer
         return RecipeCreateSerializer
 
