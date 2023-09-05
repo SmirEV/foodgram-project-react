@@ -3,6 +3,7 @@ from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              FavoritesSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
+                             RecipeShortSerializer,
                              ShoppingCartSerializer, SubscribeSerializer,
                              TagSerializer, UserCreateSerializer)
 from api.utils import generate_pdf
@@ -138,6 +139,8 @@ class RecipeViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'get':
+            if 'is_in_shopping_cart' in self.request.GET:
+                return RecipeShortSerializer
             return RecipeSerializer
         return RecipeCreateSerializer
 
