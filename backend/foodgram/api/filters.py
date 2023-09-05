@@ -30,7 +30,6 @@ class RecipeFilter(FilterSet):
     )
     is_favorited = filters.BooleanFilter(method='filter_is_favorited')
     is_in_shopping_cart = filters.BooleanFilter(
-        field_name='is_in_shopping_cart',
         method='filter_is_in_shopping_cart')
 
     class Meta:
@@ -43,9 +42,9 @@ class RecipeFilter(FilterSet):
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        # user = self.request.user
-        # if value and user.is_authenticated:
-        #     return Recipe.objects.filter(for_cooking__user=user)
+        user = self.request.user
+        if value and user.is_authenticated:
+            return queryset.filter(for_cooking__user=user)
         return queryset
         # if value and user.is_authenticated:
         #    serializer = ShoppingCartSerializer(
