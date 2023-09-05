@@ -125,7 +125,7 @@ class IngredientViewSet(ModelViewSet):
 class RecipeViewSet(ModelViewSet):
     """ Вьюсет для рецептов. """
     # queryset = Recipe.objects.all().order_by('-id')
-    serializer_class = RecipeSerializer
+    # serializer_class = RecipeSerializer
     pagination_class = CustomPagination
     filterset_class = RecipeFilter
     filter_backends = (DjangoFilterBackend, )
@@ -137,10 +137,8 @@ class RecipeViewSet(ModelViewSet):
         return recipes
 
     def get_serializer_class(self):
-        if self.action == 'get':
+        if self.action in ('get', 'list'):
             return RecipeSerializer
-        # elif 'is_in_shopping_cart' in self.request.query_params:
-        #    return RecipeShortSerializer
         return RecipeCreateSerializer
 
     def perform_create(self, serializer):
