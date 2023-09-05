@@ -3,8 +3,9 @@ from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              FavoritesSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeSerializer,
-                             ShoppingCartSerializer, SubscribeSerializer,
-                             TagSerializer, UserCreateSerializer)
+                             RecipeShortSerializer, ShoppingCartSerializer,
+                             SubscribeSerializer, TagSerializer,
+                             UserCreateSerializer)
 from api.utils import generate_pdf
 # from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
@@ -139,6 +140,9 @@ class RecipeViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'get':
             return RecipeSerializer
+        elif (self.action == 'list'
+              and 'is_in_shopping_cart' in self.request.query_params):
+            return RecipeShortSerializer
         return RecipeCreateSerializer
 
     def perform_create(self, serializer):
