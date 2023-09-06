@@ -30,6 +30,9 @@ services:
     image: smirev/foodgram_frontend
     env_file: .env
     command: cp -r /app/build/. /frontend_static/
+    depends_on:
+      - db
+      - backend
     volumes:
       - static:/frontend_static
     container_name: foodgram_frontend
@@ -37,6 +40,10 @@ services:
   nginx:
     image: smirev/foodgram_nginx
     env_file: .env
+    depends_on:
+      - db
+      - backend
+      - frontend
     volumes:
       - static:/staticfiles/
       - media:/media/
