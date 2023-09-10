@@ -124,8 +124,8 @@ class IngredientViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     """ Вьюсет для рецептов. """
-    # queryset = Recipe.objects.all().order_by('-id')
-    # serializer_class = RecipeSerializer
+    queryset = Recipe.objects.all().order_by('-id')
+    serializer_class = RecipeSerializer
     pagination_class = CustomPagination
     filterset_class = RecipeFilter
     filter_backends = (DjangoFilterBackend, )
