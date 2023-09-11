@@ -119,15 +119,12 @@ class AuthorWithRecipesSerializer(AuthorSerializer):
 class FavoritesSerializer(serializers.ModelSerializer):
     """ Сериализатор избранных рецептов. """
 
-    class Meta:
-        model = Favorites
-        fields = ('user', 'recipe',)
+    image = Base64ImageField()
 
-    def to_representation(self, instance):
-        return RecipeShortSerializer(
-            instance.recipe,
-            context={'request': self.context.get('request')}
-        ).data
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
