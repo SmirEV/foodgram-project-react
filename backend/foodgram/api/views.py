@@ -24,7 +24,7 @@ class CustomUserViewSet(UserViewSet):
     Вьюсет для эндпоинтов /users/,
     /users/subscribe, /users/set_password/.
     """
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by('-id')
     serializer_class = AuthorSerializer
     pagination_class = CustomPagination
     # filterset_class = UserFilter
@@ -104,7 +104,7 @@ class AuthorViewSet(UserViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = User.objects.filter(following__user=user)
+        queryset = User.objects.filter(following__user=user).order_by('-id')
         return queryset
 
 
