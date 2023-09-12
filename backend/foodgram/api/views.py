@@ -168,27 +168,44 @@ class RecipeViewSet(ModelViewSet):
                         i.measurement_unit]})
         return generate_pdf(request, shopping_cart)
 
-    @action(detail=True, methods=('post',))
-    def favorite(self, request, pk):
-        context = {"request": request}
-        recipe = get_object_or_404(Recipe, id=pk)
-        data = {
-            'user': request.user,
-            'recipe': recipe
-        }
-        serializer = FavoritesSerializer(data=data, context=context)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @favorite.mapping.delete
-    def destroy_favorite(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        get_object_or_404(
-            Favorites,
-            user=request.user,
-            recipe=recipe).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=True, methods=['post', 'delete'])
+    def favorite(self, request, id=None):
+        recipe = Recipe.objects.get(id=id)
+        if request.method == 'POST':
+            serializer = FavoritesSerializer(
+                Favorites.objects.create(
+                    user=request.user,
+                    recipe=recipe),
+                context={'request': request})
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
+        if request.method == 'DELETE':
+            favorite = Favorites.objects.filter(
+                user=request.user, recipe=recipe).first()
+            if favorite:
+                favorite.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(
+                    {'errors': 'Этот рецепт не находится в избранном.'},
+                    status=status.HTTP_400_BAD_REQUEST)
+#
+#    @action(detail=True, methods=('post', 'delete'))
+#    def favorite(self, request, pk):
+#        user = request.user
+#        recipe = get_object_or_404(Recipe, id=pk)
+#        Favorites.objects.create(user=user, recipe=recipe)
+#        serializer = FavoritesSerializer(recipe)
+#        return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+#    @favorite.mapping.delete
+#    def destroy_favorite(self, request, pk):
+#        recipe = get_object_or_404(Recipe, id=pk)
+#        get_object_or_404(
+#            Favorites,
+#            user=request.user,
+#            recipe=recipe).delete()
+#        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=('POST',))
     def shopping_cart(self, request, pk):
