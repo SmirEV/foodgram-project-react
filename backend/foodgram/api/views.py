@@ -168,27 +168,24 @@ class RecipeViewSet(ModelViewSet):
                         i.measurement_unit]})
         return generate_pdf(request, shopping_cart)
 
-    @action(detail=True, methods=['post', 'delete'])
+    @action(detail=True,
+            methods=['post', 'delete'],
+            permission_classes=[IsAuthenticated])
     def favorite(self, request, id=None):
-        recipe = Recipe.objects.get(id=id)
         if request.method == 'POST':
-            serializer = FavoritesSerializer(
-                Favorites.objects.create(
-                    user=request.user,
-                    recipe=recipe),
-                context={'request': request})
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
+            recipe = get_object_or_404(Recipe, id=id)
+            Favorites.objects.create(
+                user=request.user, recipe=recipe)
+            serializer = FavoritesSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            favorite = Favorites.objects.filter(
-                user=request.user, recipe=recipe).first()
-            if favorite:
-                favorite.delete()
+            favorite_object = Favorites.objects.filter(
+                user=request.user, recipe__id=id)
+            if favorite_object.exists():
+                favorite_object.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response(
-                    {'errors': 'Этот рецепт не находится в избранном.'},
-                    status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors': 'Рецепт уже удален из избранного'},
+                            status=status.HTTP_400_BAD_REQUEST)
 #
 #    @action(detail=True, methods=('post', 'delete'))
 #    def favorite(self, request, pk):
