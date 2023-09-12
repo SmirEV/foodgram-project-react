@@ -148,7 +148,7 @@ class FavoritesSerializer(serializers.ModelSerializer):
             user=obj.user, recipe=obj.recipe).exists()
 #
 #
-#class FavoritesSerializer(serializers.ModelSerializer):
+# class FavoritesSerializer(serializers.ModelSerializer):
 #    """ Сериализатор избранных рецептов. """
 #
 #    image = Base64ImageField()
