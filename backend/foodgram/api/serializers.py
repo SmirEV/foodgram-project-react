@@ -122,7 +122,7 @@ class FavoritesSerializer(serializers.ModelSerializer):
     """
     id = serializers.IntegerField(source='recipe.id')
     name = serializers.CharField(source='recipe.name')
-    image = serializers.Base64ImageField(source='recipe.image')
+    image = Base64ImageField(source='recipe.image')
     cooking_time = serializers.IntegerField(source='recipe.cooking_time')
 
     class Meta:
