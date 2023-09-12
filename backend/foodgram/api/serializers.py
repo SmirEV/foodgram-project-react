@@ -117,14 +117,46 @@ class AuthorWithRecipesSerializer(AuthorSerializer):
 
 
 class FavoritesSerializer(serializers.ModelSerializer):
-    """ Сериализатор избранных рецептов. """
-
-    image = Base64ImageField()
+    """
+    Сериализатор для избранного.
+    """
+    id = serializers.IntegerField(source='recipe.id')
+    name = serializers.CharField(source='recipe.name')
+    image = serializers.Base64ImageField(source='recipe.image')
+    cooking_time = serializers.IntegerField(source='recipe.cooking_time')
 
     class Meta:
-        model = Recipe
+        model = Favorites
         fields = ('id', 'name', 'image', 'cooking_time')
-        read_only_fields = ('id', 'name', 'image', 'cooking_time')
+
+    def validate(self, data):
+        """ Проверка данных на уровне сериализатора. """
+        user_id = data['user_id']
+        recipe_id = data['recipe_id']
+        if Favorites.objects.filter(
+                user=user_id,
+                recipe=recipe_id).exists():
+            raise serializers.ValidationError({
+                'errors': 'Ошибка! Рецепт уже добавлен в избранное.'})
+        data['user'] = User.objects.get(User, id=user_id)
+        data['recipe'] = Recipe.objects.get(Recipe, id=recipe_id)
+        return data
+
+    def get_is_favorited(self, obj):
+        """ Проверка подписки. """
+        return Favorites.objects.filter(
+            user=obj.user, recipe=obj.recipe).exists()
+#
+#
+#class FavoritesSerializer(serializers.ModelSerializer):
+#    """ Сериализатор избранных рецептов. """
+#
+#    image = Base64ImageField()
+#
+#    class Meta:
+#        model = Recipe
+#        fields = ('id', 'name', 'image', 'cooking_time')
+#        read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
