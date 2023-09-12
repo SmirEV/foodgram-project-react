@@ -141,11 +141,6 @@ class FavoritesSerializer(serializers.ModelSerializer):
         data['user'] = User.objects.get(User, id=user_id)
         data['recipe'] = Recipe.objects.get(Recipe, id=recipe_id)
         return data
-
-    def get_is_favorited(self, obj):
-        """ Проверка подписки. """
-        return Favorites.objects.filter(
-            user=obj.user, recipe=obj.recipe).exists()
 #
 #
 # class FavoritesSerializer(serializers.ModelSerializer):
