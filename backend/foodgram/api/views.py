@@ -171,7 +171,7 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True,
             methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
-    def favorite(self, request, id=None):
+    def favorite(self, request, id):
         if request.method == 'POST':
             recipe = Recipe.objects.filter(id=id).first(),
             Favorites.objects.create(
