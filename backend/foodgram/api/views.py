@@ -1,8 +1,8 @@
 from api.filters import IngredientFilter, RecipeFilter, UserFilter
 from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
-                             FavoritesSerializer, IngredientSerializer,
-                             RecipeCreateSerializer, RecipeSerializer,
+                             IngredientSerializer, RecipeCreateSerializer,
+                             RecipeSerializer, RecipeShortSerializer,
                              ShoppingCartSerializer, SubscribeSerializer,
                              TagSerializer, UserCreateSerializer)
 from api.utils import generate_pdf
@@ -176,7 +176,7 @@ class RecipeViewSet(ModelViewSet):
             recipe = get_object_or_404(Recipe, id=id)
             Favorites.objects.create(
                 user=request.user, recipe=recipe)
-            serializer = FavoritesSerializer(recipe)
+            serializer = RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
             favorite_object = Favorites.objects.filter(
