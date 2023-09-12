@@ -173,14 +173,14 @@ class RecipeViewSet(ModelViewSet):
             permission_classes=[IsAuthenticated])
     def favorite(self, request, id=None):
         if request.method == 'POST':
-            recipe = get_object_or_404(Recipe, id=id)
+            recipe = Recipe.objects.filter(id=id).first(),
             Favorites.objects.create(
                 user=request.user, recipe=recipe)
             serializer = RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
             favorite_object = Favorites.objects.filter(
-                user=request.user, recipe__id=id)
+                user=request.user, recipe_id=id)
             if favorite_object.exists():
                 favorite_object.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
