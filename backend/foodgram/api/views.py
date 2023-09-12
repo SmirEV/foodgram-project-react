@@ -169,8 +169,7 @@ class RecipeViewSet(ModelViewSet):
         return generate_pdf(request, shopping_cart)
 
     @action(detail=True,
-            methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])
+            methods=['post', 'delete'])
     def favorite(self, request, id):
         if request.method == 'POST':
             recipe = Recipe.objects.filter(id=id).first(),
