@@ -22,17 +22,24 @@ class Command(BaseCommand):
         users = []
 
         for i in range(USERS_COUNT):
-            email = f'email{i}@test.ru',
-            if User.objects.filter(email=email).exists():
-                users.append(User.objects.get(email=email))
-            else:
-                new_user = User.objects.create_user(
-                    email=f'email{i}@test.ru',
-                    username=f'test{i}',
-                    first_name=f'test{i}',
-                    last_name=f'testtest{i}',
-                    password=f'testpassword{i}')
-                users.append(new_user)
+            # email = f'email{i}@test.ru'
+            new_user = User.objects.create_user(
+                email=f'email{i}@test.ru',
+                username=f'test{i}',
+                first_name=f'test{i}',
+                last_name=f'testtest{i}',
+                password=f'testpassword{i}')
+            users.append(new_user)
+#            if User.objects.filter(email=email).exists():
+#                users.append(User.objects.get(email=email))
+#            else:
+#                new_user = User.objects.create_user(
+#                    email=f'email{i}@test.ru',
+#                    username=f'test{i}',
+#                    first_name=f'test{i}',
+#                    last_name=f'testtest{i}',
+#                    password=f'testpassword{i}')
+#                users.append(new_user)
 
         for model, file in TABLES_DICT.items():
             with open(f'{settings.FILE_DIR}/{file}',
