@@ -3,8 +3,8 @@ from api.pagination import CustomPagination
 from api.serializers import (AuthorSerializer, AuthorWithRecipesSerializer,
                              IngredientSerializer, RecipeCreateSerializer,
                              RecipeSerializer, RecipeShortSerializer,
-                             SubscribeSerializer, TagSerializer,
-                             UserCreateSerializer)
+                             ShoppingCartSerializer, SubscribeSerializer,
+                             TagSerializer, UserCreateSerializer)
 from api.utils import generate_pdf
 # from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
@@ -205,14 +205,13 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True, methods=('POST',))
     def shopping_cart(self, request, pk):
-        # context = {'request': request}
+        context = {'request': request}
         recipe = get_object_or_404(Recipe, id=pk)
-        # data = {
-        #    'user': request.user,
-        #    'recipe': recipe
-        # }
-        # serializer = ShoppingCartSerializer(data=data, context=context)
-        serializer = RecipeShortSerializer(recipe=recipe)
+        data = {
+            'user': request.user,
+            'recipe': recipe
+        }
+        serializer = ShoppingCartSerializer(data=data, context=context) # нет такого сериализатора!!!
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

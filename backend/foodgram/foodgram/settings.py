@@ -64,24 +64,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': '/data/db.sqlite3',
-        }
+# if DEBUG:
+#    DATABASES = {
+#        'default': {
+#            'ENGINE': 'django.db.backends.sqlite3',
+#            'NAME': '/data/db.sqlite3',
+#        }
+#    }
+# else:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', default='django'),
+        'USER': os.getenv('POSTGRES_USER', default='django'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default=''),
+        'HOST': os.getenv('DB_HOST', default=''),
+        'PORT': os.getenv('DB_PORT', default='5432')
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_DB', default='django'),
-            'USER': os.getenv('POSTGRES_USER', default='django'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', default=''),
-            'HOST': os.getenv('DB_HOST', default=''),
-            'PORT': os.getenv('DB_PORT', default='5432')
-        }
-    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
