@@ -211,7 +211,8 @@ class RecipeViewSet(ModelViewSet):
             'user': request.user,
             'recipe': recipe
         }
-        serializer = ShoppingCartSerializer(data=data, context=context) # нет такого сериализатора!!!
+        serializer = ShoppingCartSerializer(data=data, context=context)
+        # нет такого сериализатора!!!
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
