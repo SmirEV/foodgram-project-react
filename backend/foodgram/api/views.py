@@ -170,16 +170,16 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True,
             methods=['post', 'delete'])
-    def favorite(self, request, id):
+    def favorite(self, request, pk):
         if request.method == 'POST':
-            recipe = Recipe.objects.filter(id=id).first(),
+            recipe = Recipe.objects.filter(id=pk).first(),
             Favorites.objects.create(
                 user=request.user, recipe=recipe)
             serializer = RecipeShortSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
             favorite_object = Favorites.objects.filter(
-                user=request.user, recipe_id=id)
+                user=request.user, recipe_id=pk)
             if favorite_object.exists():
                 favorite_object.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
