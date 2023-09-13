@@ -71,7 +71,7 @@ class CustomUserViewSet(UserViewSet):
         """ Получить на кого пользователь подписан. """
         serializer = SubscribeSerializer(
             self.paginate_queryset(Subscribtions.objects.filter(
-                                   user=request.user)),
+                                   user=request.user).order_by('-id')),
             many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
 
